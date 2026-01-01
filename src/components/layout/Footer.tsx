@@ -1,6 +1,9 @@
 "use client";
 
+import { siteContent } from "@/data/siteContent";
+
 export function Footer() {
+  const { footer } = siteContent;
   const currentYear = new Date().getFullYear();
 
   return (
@@ -9,22 +12,22 @@ export function Footer() {
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
           {/* Logo */}
           <div className="flex items-center gap-1">
-            <span className="text-lg font-bold text-text-primary">Rosa</span>
-            <span className="text-lg font-bold text-electric-blue">Bio</span>
+            <span className="text-lg font-bold text-text-primary">{footer.logo.part1}</span>
+            <span className="text-lg font-bold text-electric-blue">{footer.logo.part2}</span>
           </div>
 
           {/* Copyright */}
           <p className="text-slate-lighter text-sm text-center">
-            &copy; {currentYear} RosaBio. All rights reserved.
+            &copy; {currentYear} {footer.copyright}
           </p>
 
           {/* Minimal links */}
           <div className="flex items-center gap-4 text-sm">
             <a
-              href="mailto:BD@rosabio.com"
+              href={`mailto:${footer.contactEmail}`}
               className="text-slate-lighter hover:text-electric-blue transition-colors"
             >
-              Contact
+              {footer.contactLink}
             </a>
           </div>
         </div>

@@ -4,6 +4,7 @@ import { Button } from "../ui/Button";
 import { ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
+import { siteContent } from "@/data/siteContent";
 
 // --- COMPONENT 1: GAS CLOUD (Dark theme - use screen blend mode) ---
 const GasCloud = () => {
@@ -180,6 +181,8 @@ function DNARow({ index }: { index: number }) {
 
 // --- HERO COMPONENT ---
 export function Hero() {
+  const { hero } = siteContent;
+
   const handleScrollToTechnology = () => {
     const element = document.querySelector("#technology");
     if (element) element.scrollIntoView({ behavior: "smooth" });
@@ -207,7 +210,7 @@ export function Hero() {
               className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-electric-blue/10 border border-electric-blue/20 mb-6 backdrop-blur-sm"
             >
               <span className="w-1.5 h-1.5 rounded-sm bg-electric-blue" />
-              <span className="text-electric-blue text-sm font-medium">Statistics-First Analysis</span>
+              <span className="text-electric-blue text-sm font-medium">{hero.badge}</span>
             </motion.div>
 
             <motion.h1
@@ -216,9 +219,9 @@ export function Hero() {
               transition={{ duration: 0.6, delay: 0.1 }}
               className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6"
             >
-              <span className="text-text-primary">Smarter.</span>{" "}
-              <span className="text-gradient">Better.</span>{" "}
-              <span className="text-text-primary">Faster.</span>
+              <span className="text-text-primary">{hero.title.part1}</span>{" "}
+              <span className="text-gradient">{hero.title.part2}</span>{" "}
+              <span className="text-text-primary">{hero.title.part3}</span>
             </motion.h1>
 
             <motion.p
@@ -227,7 +230,7 @@ export function Hero() {
               transition={{ duration: 0.6, delay: 0.2 }}
               className="text-lg md:text-xl text-slate-lighter max-w-lg mb-8"
             >
-              A new paradigm for analysis of nucleic acid sequence information.
+              {hero.subtitle}
             </motion.p>
 
             <motion.div
@@ -237,13 +240,13 @@ export function Hero() {
               className="flex flex-col sm:flex-row gap-4"
             >
               <Button size="lg" onClick={handleScrollToTechnology}>
-                View Technology <ArrowRight className="w-5 h-5" />
+                {hero.primaryButton} <ArrowRight className="w-5 h-5" />
               </Button>
               <Button variant="secondary" size="lg" onClick={() => {
                   const element = document.querySelector("#contact");
                   if (element) element.scrollIntoView({ behavior: "smooth" });
                 }}>
-                Get in Touch
+                {hero.secondaryButton}
               </Button>
             </motion.div>
           </div>

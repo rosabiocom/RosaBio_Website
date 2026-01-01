@@ -5,15 +5,10 @@ import { cn } from "@/lib/utils";
 import { Button } from "../ui/Button";
 import { Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-
-const navLinks = [
-  { href: "#technology", label: "Technology" },
-  { href: "#about", label: "About" },
-  { href: "#leadership", label: "Leadership" },
-  { href: "#contact", label: "Contact" },
-];
+import { siteContent } from "@/data/siteContent";
 
 export function Header() {
+  const { header } = siteContent;
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -78,16 +73,16 @@ export function Header() {
               className="flex items-center gap-1 group"
             >
               <span className="text-2xl font-bold text-text-primary">
-                Rosa
+                {header.logo.part1}
               </span>
               <span className="text-2xl font-bold text-electric-blue group-hover:text-electric-light transition-colors">
-                Bio
+                {header.logo.part2}
               </span>
             </a>
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center gap-1">
-              {navLinks.map((link) => (
+              {header.navLinks.map((link) => (
                 <a
                   key={link.href}
                   href={link.href}
@@ -108,7 +103,7 @@ export function Header() {
                   size="sm"
                   onClick={() => handleNavClick("#contact")}
                 >
-                  Get in Touch
+                  {header.ctaButton}
                 </Button>
               </div>
             </div>
@@ -153,7 +148,7 @@ export function Header() {
               transition={{ duration: 0.3, delay: 0.1 }}
               className="relative flex flex-col items-center justify-center min-h-screen gap-6 p-8"
             >
-              {navLinks.map((link, index) => (
+              {header.navLinks.map((link, index) => (
                 <motion.a
                   key={link.href}
                   href={link.href}
@@ -176,7 +171,7 @@ export function Header() {
                 className="mt-4"
               >
                 <Button size="lg" onClick={() => handleNavClick("#contact")}>
-                  Get in Touch
+                  {header.ctaButton}
                 </Button>
               </motion.div>
             </motion.nav>
