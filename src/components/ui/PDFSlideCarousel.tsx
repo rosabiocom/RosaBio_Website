@@ -167,6 +167,11 @@ export function PDFSlideCarousel({
     );
   }
 
+  // Guard for TypeScript - PDFComponents is guaranteed non-null here
+  if (!PDFComponents) {
+    return null;
+  }
+
   const { Document, Page } = PDFComponents;
 
   return (
