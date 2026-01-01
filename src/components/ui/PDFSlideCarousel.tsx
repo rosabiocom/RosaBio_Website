@@ -74,8 +74,8 @@ export function PDFSlideCarousel({
   useEffect(() => {
     const updateWidth = () => {
       if (containerRef.current) {
-        // Get container width minus padding, max 800px
-        const width = Math.min(containerRef.current.offsetWidth - 32, 800);
+        // Get container width minus padding - no max cap for full responsiveness
+        const width = containerRef.current.offsetWidth - 16;
         setContainerWidth(width > 0 ? width : 300);
       }
     };
@@ -205,8 +205,8 @@ export function PDFSlideCarousel({
           "bg-navy-dark"
         )}
       >
-        {/* Slide Display */}
-        <div ref={containerRef} className="relative aspect-video w-full flex items-center justify-center bg-white">
+        {/* Slide Display - taller aspect on mobile for better PDF readability */}
+        <div ref={containerRef} className="relative aspect-[4/3] md:aspect-video w-full flex items-center justify-center bg-white">
           {isLoading && (
             <div className="absolute inset-0 flex items-center justify-center bg-navy-dark z-20">
               <div className="text-slate-lighter">Loading slides...</div>
@@ -253,12 +253,12 @@ export function PDFSlideCarousel({
             </AnimatePresence>
           </Document>
 
-          {/* Navigation Arrows */}
+          {/* Navigation Arrows - min 44px touch target for accessibility */}
           <button
             onClick={() => paginate(-1)}
             className={cn(
               "absolute left-2 md:left-4 top-1/2 z-10 -translate-y-1/2",
-              "flex h-8 w-8 md:h-10 md:w-10 items-center justify-center rounded-full",
+              "flex h-11 w-11 md:h-12 md:w-12 items-center justify-center rounded-full",
               "bg-navy-dark/80 backdrop-blur-sm border border-slate-dark",
               "text-slate-lighter transition-all duration-200",
               "hover:bg-electric-blue/10 hover:text-electric-blue hover:border-electric-blue/30",
@@ -266,14 +266,14 @@ export function PDFSlideCarousel({
             )}
             aria-label="Previous slide"
           >
-            <ChevronLeft className="h-4 w-4 md:h-5 md:w-5" />
+            <ChevronLeft className="h-5 w-5 md:h-6 md:w-6" />
           </button>
 
           <button
             onClick={() => paginate(1)}
             className={cn(
               "absolute right-2 md:right-4 top-1/2 z-10 -translate-y-1/2",
-              "flex h-8 w-8 md:h-10 md:w-10 items-center justify-center rounded-full",
+              "flex h-11 w-11 md:h-12 md:w-12 items-center justify-center rounded-full",
               "bg-navy-dark/80 backdrop-blur-sm border border-slate-dark",
               "text-slate-lighter transition-all duration-200",
               "hover:bg-electric-blue/10 hover:text-electric-blue hover:border-electric-blue/30",
@@ -281,27 +281,29 @@ export function PDFSlideCarousel({
             )}
             aria-label="Next slide"
           >
-            <ChevronRight className="h-4 w-4 md:h-5 md:w-5" />
+            <ChevronRight className="h-5 w-5 md:h-6 md:w-6" />
           </button>
         </div>
 
-        {/* Dot Indicators */}
-        <div className="flex items-center justify-center gap-2 py-4 bg-navy-medium">
-          {numPages > 0 &&
-            Array.from({ length: numPages }, (_, i) => i + 1).map((page) => (
-              <button
-                key={page}
-                onClick={() => goToPage(page)}
-                className={cn(
-                  "h-2.5 w-2.5 rounded-full transition-all duration-200",
-                  "focus:outline-none focus:ring-2 focus:ring-electric-blue focus:ring-offset-2 focus:ring-offset-navy-medium",
-                  page === currentPage
-                    ? "bg-electric-blue shadow-md shadow-electric-blue/50"
-                    : "bg-slate-dark hover:bg-slate-medium"
-                )}
-                aria-label={`Go to slide ${page}`}
-              />
-            ))}
+        {/* Dot Indicators - scrollable on mobile for many pages */}
+        <div className="flex items-center justify-center py-4 bg-navy-medium overflow-x-auto">
+          <div className="flex items-center gap-2 px-4">
+            {numPages > 0 &&
+              Array.from({ length: numPages }, (_, i) => i + 1).map((page) => (
+                <button
+                  key={page}
+                  onClick={() => goToPage(page)}
+                  className={cn(
+                    "h-2.5 w-2.5 min-w-[0.625rem] rounded-full transition-all duration-200",
+                    "focus:outline-none focus:ring-2 focus:ring-electric-blue focus:ring-offset-2 focus:ring-offset-navy-medium",
+                    page === currentPage
+                      ? "bg-electric-blue shadow-md shadow-electric-blue/50"
+                      : "bg-slate-dark hover:bg-slate-medium"
+                  )}
+                  aria-label={`Go to slide ${page}`}
+                />
+              ))}
+          </div>
         </div>
       </div>
 

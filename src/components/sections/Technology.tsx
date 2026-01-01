@@ -65,7 +65,7 @@ export function Technology() {
         </div>
 
         {/* 3. TECHNOLOGY DECK & RESOURCES GRID */}
-        <div className="grid lg:grid-cols-12 gap-12 items-start">
+        <div className="grid md:grid-cols-12 gap-6 md:gap-8 lg:gap-12 items-start">
 
           {/* Left Side: Interactive Deck (Larger) */}
           <motion.div
@@ -73,7 +73,7 @@ export function Technology() {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="lg:col-span-8"
+            className="md:col-span-7 lg:col-span-8"
           >
             <div className="mb-6">
               <h3 className="text-2xl font-bold text-text-primary mb-2">{technology.deck.title}</h3>
@@ -90,7 +90,7 @@ export function Technology() {
              whileInView={{ opacity: 1, x: 0 }}
              viewport={{ once: true }}
              transition={{ duration: 0.6, delay: 0.4 }}
-             className="lg:col-span-4 flex flex-col gap-6"
+             className="md:col-span-5 lg:col-span-4 flex flex-col gap-6"
           >
             <div className="mb-2">
               <h3 className="text-2xl font-bold text-text-primary mb-2">{technology.resources.title}</h3>
