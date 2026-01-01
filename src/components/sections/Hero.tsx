@@ -82,12 +82,12 @@ const ParticleField = () => {
 function DNAHelix() {
   const rows = 15;
   return (
-    <div className="relative h-[300px] md:h-[400px] lg:h-[500px] w-full flex items-center justify-center isolate z-20">
+    <div className="relative h-[250px] sm:h-[350px] md:h-[450px] lg:h-[550px] w-full flex items-center justify-center isolate z-20">
 
       <GasCloud />
       <ParticleField />
 
-      <div className="relative h-full w-48 md:w-56 lg:w-64 flex flex-col justify-between py-6 md:py-8 lg:py-10 z-20">
+      <div className="relative h-full w-36 sm:w-44 md:w-56 lg:w-64 flex flex-col justify-between py-4 sm:py-6 md:py-8 lg:py-10 z-20">
         {[...Array(rows)].map((_, i) => (
           <DNARow key={i} index={i} />
         ))}
@@ -251,12 +251,12 @@ export function Hero() {
             </motion.div>
           </div>
 
-          {/* Right Column (DNA + Atmosphere) */}
+          {/* Right Column (DNA + Atmosphere) - visible on all devices */}
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="hidden lg:flex relative items-center justify-center h-[600px]"
+            className="flex relative items-center justify-center h-[300px] sm:h-[400px] md:h-[500px] lg:h-[600px]"
           >
             <DNAHelix />
           </motion.div>
