@@ -1,0 +1,120 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Dark Theme - Navy Blues */
+  --navy-darkest: #0a1628;
+  --navy-dark: #0f172a;
+  --navy-medium: #1e293b;
+
+  /* Slate Greys */
+  --slate-dark: #334155;
+  --slate-medium: #475569;
+  --slate-light: #64748b;
+  --slate-lighter: #94a3b8;
+
+  /* Electric Blues */
+  --electric-blue: #3b82f6;
+  --electric-blue-light: #60a5fa;
+  --electric-blue-dark: #2563eb;
+
+  /* Text Colors */
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+
+  /* Semantic mappings */
+  --background: var(--navy-darkest);
+  --background-secondary: var(--navy-dark);
+  --foreground: var(--text-primary);
+  --foreground-muted: var(--slate-lighter);
+
+  /* Accent colors */
+  --accent: var(--electric-blue);
+  --accent-light: var(--electric-blue-light);
+  --accent-dark: var(--electric-blue-dark);
+
+  --border: var(--slate-dark);
+  --card: var(--navy-dark);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-inter), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom scrollbar - Dark theme */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--navy-dark);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--slate-dark);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--slate-medium);
+}
+::selection {
+  background-color: var(--accent);
+  color: white;
+}
+
+@layer utilities {
+
+  /* 1. STATISTICS DOT GRID - Dark theme optimized
+     Higher opacity for visibility on dark background
+  */
+  .bg-grid-pattern {
+    background-color: transparent;
+    background-size: 40px 40px;
+    /* Brighter dots for dark background */
+    background-image: radial-gradient(circle, rgba(59, 130, 246, 0.2) 2px, transparent 2px);
+    mask-image: none;
+    -webkit-mask-image: none;
+  }
+
+  /* 2. RAW SEQUENCE SCATTER - Dark theme optimized */
+  .bg-dna-letters {
+    background-size: 200px 200px;
+    /* Adjusted opacity for dark background */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Cstyle%3E.txt%7Bfont-family:sans-serif;font-weight:900;fill:%233b82f6;opacity:0.08;%7D%3C/style%3E%3Ctext x='20' y='40' class='txt' font-size='14'%3EA%3C/text%3E%3Ctext x='150' y='30' class='txt' font-size='10'%3ET%3C/text%3E%3Ctext x='80' y='120' class='txt' font-size='16'%3EC%3C/text%3E%3Ctext x='170' y='180' class='txt' font-size='12'%3EG%3C/text%3E%3Ctext x='40' y='160' class='txt' font-size='10'%3EA%3C/text%3E%3Ctext x='110' y='80' class='txt' font-size='12'%3ET%3C/text%3E%3C/svg%3E");
+    pointer-events: none;
+  }
+
+  /* 3. RICH MESH GRADIENT - Dark theme optimized */
+  .bg-mesh-gradient {
+    background-color: transparent;
+    background-image:
+      radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.15) 0px, transparent 50%),
+      radial-gradient(at 100% 0%, rgba(37, 99, 235, 0.12) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, rgba(59, 130, 246, 0.1) 0px, transparent 50%),
+      radial-gradient(at 0% 100%, rgba(37, 99, 235, 0.08) 0px, transparent 50%);
+  }
+
+  /* Text gradient for headings - Electric blue */
+  .text-gradient {
+    background: linear-gradient(135deg, var(--electric-blue-light), var(--electric-blue));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Utilities for 3D perspective */
+  .perspective-1000 {
+    perspective: 1000px;
+  }
+  .preserve-3d {
+    transform-style: preserve-3d;
+  }
+}
