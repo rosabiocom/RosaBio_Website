@@ -20,12 +20,29 @@ export const siteContent = {
   // ===========================================================================
   hero: {
     title: {
-      part1: "The New Paradigm for",
-      highlight: "Nucleic Acid",
-      part2: "Sequence Analysis.",
+      part1: "Enhanced Measurement of",
+      highlight: "Genetic Sequence Complexity",
+      part2: "to Drive Clinical Insights",
     },
     subtitle: "Statistics-first. No reference genome required. Unbiased discovery.",
-    primaryButton: "View Our Technology",
+    primaryButton: "Benefits of Rosa Bio Technology",
+  },
+
+  // ===========================================================================
+  // BENEFITS SECTION
+  // ===========================================================================
+  benefits: {
+    title: "Benefits of Rosa Bio Technology",
+    items: [
+      "ROSA's \"statistics first\" Semore platform allows detection of genomic complexity missed by other methods",
+      "Allows faster, cheaper, smarter genomics analysis",
+      "Readily scalable",
+      "Agnostic to nucleic acid type: DNA (WGS and targeted), RNA, short and long read, exome, non-coding regions, ctDNA, bisulfite, etc.",
+      "Detects structure-based changes, not based on gene panels",
+      "Can be used with tissue sample or liquid biopsy (plasma cfDNA)",
+      "Semore software output = AI-ready",
+      "Diverse applications: Dx, Tx, other",
+    ],
   },
 
   // ===========================================================================
@@ -33,10 +50,10 @@ export const siteContent = {
   // ===========================================================================
   valueProps: {
     title: {
-      part1: "Smarter. Better.",
-      highlight: "Faster.",
+      part1: "Panoptic.",
+      highlight: "Faster. Cheaper.",
     },
-    subtitle: "Our technology delivers breakthrough performance across every metric that matters.",
+    subtitle: "",
     items: [
       {
         iconKey: "zap",
@@ -69,6 +86,41 @@ export const siteContent = {
       "A new paradigm for analysis of nucleic acid sequence information. Unlike traditional methods, we require no reference genome for sequence alignment.",
       "Our approach enables truly unbiased discovery, identifying patterns and variations that conventional tools simply cannot detect.",
     ],
+    techSummary: [
+      {
+        title: "Why Statistics First",
+        description: "Our statistics-first approach analyzes raw data directly, eliminating reference genome bias and enabling detection of all genomic complexity.",
+      },
+      {
+        title: "White Paper",
+        description: "Read our white paper on the benefits of a statistics-first approach to genomic analysis.",
+        href: "#",
+      },
+      {
+        title: "Slide Set",
+        description: "View our technology overview presentation.",
+        isSlideLink: true,
+      },
+      {
+        title: "Precision Medicine Applications",
+        description: "Patient stratification using sequence variation that predicts treatment response and disease progression.",
+      },
+    ],
+    slides: {
+      pdfPath: "/slides/techsummary.pdf",
+      items: [
+        { title: "Enhanced Measurement of Genetic Complexity", subtitle: "To Drive Clinical Breakthroughs" },
+        { title: "Old Paradigm, New Reality", subtitle: "NGS technologies generating massive amounts of genomic data" },
+        { title: "Reference Genomes Poorly Represent Biology", subtitle: "Current methods are dependent on comparisons to reference genomes" },
+        { title: "Legacy Genomics Workflows", subtitle: "Complex, time and resource intensive, with unavoidable data loss" },
+        { title: "ROSA Changes the Paradigm", subtitle: "A statistics-first approach" },
+        { title: "ROSA's Semore Platform", subtitle: "Smarter, faster, cheaper genomic analysis" },
+        { title: "Comparison of Approaches", subtitle: "Alignment vs SPLASH methods" },
+        { title: "ROSA Semore Software Accuracy", subtitle: "Ability to detect all genetic features" },
+        { title: "ROSA Semore Software Overview", subtitle: "Statistics-first detection of genomic complexity" },
+        { title: "ROSA BIO Intellectual Property", subtitle: "Differentiated and protectable approach" },
+      ],
+    },
     externalLink: {
       text: "Read Stanford SPLASH Papers",
       href: "#",
@@ -80,19 +132,19 @@ export const siteContent = {
   // ===========================================================================
   leadership: {
     title: "Leadership.",
-    subtitle: "Experienced leaders driving innovation in genomic analysis.",
+    subtitle: "",
     team: [
       {
         initials: "JS",
         name: "Julia Salzman",
-        title: "CFO",
-        description: `Developed SPLASH technology during the Covid-19 pandemic, pioneering a new approach to nucleic acid sequence analysis.`,
+        title: "Founder & CSO",
+        description: `Associate Professor in the Department of Biomedical Data Science, and by courtesy in Biology and Statistics at Stanford University. A.B. in Mathematics from Princeton University magna cum laude and Ph.D. from Stanford University in Statistics. Developed statistical algorithms that discovered circular RNA and the SPLASH suite of statistics-first genomic algorithms. Research funded by NIH, NSF, CZI. Recognized with Alfred P. Sloan Fellowship, McCormick-Gabilan Fellowship, and NSF CAREER Award.`,
       },
       {
-        initials: "MSR",
-        name: "Michael Rodriguez",
+        initials: "MR",
+        name: "Michael Rabson",
         title: "Co-Founder & CEO",
-        description: `Leading scientific vision and research strategy, with deep expertise in computational biology and genomics.`,
+        description: `More than 25 years of experience in life sciences. Former partner at Wilson Sonsini Goodrich & Rosati for 15 years. Served as General Counsel of Maxygen (MAXY) and Cytokinetics (CYTK). Former patent examiner at USPTO focused on biotechnology. Member of the patent bar. Author of scientific publications in Science, Nature, PNAS. Ph.D. from Yale University and J.D. from Yale Law School.`,
       },
     ],
   },

@@ -27,8 +27,8 @@ const itemVariants = {
 };
 
 export function Hero() {
-  const scrollToTechnology = () => {
-    const element = document.getElementById("technology");
+  const scrollToBenefits = () => {
+    const element = document.getElementById("benefits");
     if (element) {
       element.scrollIntoView({ behavior: "smooth" });
     }
@@ -71,7 +71,7 @@ export function Hero() {
         </motion.p>
 
         <motion.div variants={itemVariants} className="mt-10 md:mt-12">
-          <Button size="lg" onClick={scrollToTechnology}>
+          <Button size="lg" onClick={scrollToBenefits}>
             {siteContent.hero.primaryButton}
             <ArrowDown className="h-5 w-5" />
           </Button>
