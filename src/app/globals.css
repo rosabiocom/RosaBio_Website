@@ -1,0 +1,85 @@
+@import "tailwindcss";
+
+:root {
+  /* Navy Blues */
+  --navy-darkest: #0a1628;
+  --navy-dark: #0f172a;
+  --navy-medium: #1e293b;
+
+  /* Slate Greys */
+  --slate-dark: #334155;
+  --slate-medium: #475569;
+  --slate-light: #64748b;
+  --slate-lighter: #94a3b8;
+
+  /* Electric Blues */
+  --electric-blue: #3b82f6;
+  --electric-blue-light: #60a5fa;
+  --electric-blue-dark: #2563eb;
+
+  /* Text Colors */
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+
+  /* Background */
+  --background: var(--navy-darkest);
+  --foreground: var(--text-primary);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  /* Navy Scale */
+  --color-navy-darkest: var(--navy-darkest);
+  --color-navy-dark: var(--navy-dark);
+  --color-navy-medium: var(--navy-medium);
+
+  /* Slate Scale */
+  --color-slate-dark: var(--slate-dark);
+  --color-slate-medium: var(--slate-medium);
+  --color-slate-light: var(--slate-light);
+  --color-slate-lighter: var(--slate-lighter);
+
+  /* Electric Blue */
+  --color-electric-blue: var(--electric-blue);
+  --color-electric-blue-light: var(--electric-blue-light);
+  --color-electric-blue-dark: var(--electric-blue-dark);
+
+  /* Text */
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+
+  /* Font */
+  --font-sans: var(--font-inter);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--navy-dark);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--slate-dark);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--slate-medium);
+}
