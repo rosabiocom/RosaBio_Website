@@ -131,7 +131,7 @@ export const siteContent = {
   // LEADERSHIP SECTION
   // ===========================================================================
   leadership: {
-    title: "Leadership.",
+    title: "Leadership",
     subtitle: "",
     team: [
       {
