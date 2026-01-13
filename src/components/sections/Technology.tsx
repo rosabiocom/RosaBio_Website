@@ -2,7 +2,7 @@
 
 import { Section } from "@/components/ui/Section";
 import { SlideDeckCarousel } from "@/components/ui/SlideDeckCarousel";
-import { ExternalLink, ChevronRight, FileText, Presentation, Microscope, BarChart3 } from "lucide-react";
+import { ChevronRight, FileText, Presentation, Microscope, BarChart3 } from "lucide-react";
 import { siteContent } from "@/data/siteContent";
 import { cn } from "@/lib/utils";
 
@@ -68,18 +68,6 @@ export function Technology() {
           })}
         </div>
 
-        {/* External Link */}
-        <div className="mt-10">
-          <a
-            href={siteContent.technology.externalLink.href}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 text-electric-blue transition-colors hover:text-electric-blue-light"
-          >
-            {siteContent.technology.externalLink.text}
-            <ExternalLink className="h-4 w-4" />
-          </a>
-        </div>
       </div>
     </Section>
   );

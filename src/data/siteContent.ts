@@ -21,10 +21,14 @@ export const siteContent = {
   hero: {
     title: {
       part1: "Enhanced Measurement of",
-      highlight: "Genetic Sequence Complexity",
+      highlight: "Genomic Sequence Complexity",
       part2: "to Drive Clinical Insights",
     },
-    subtitle: "Statistics-first. No reference genome required. Unbiased discovery.",
+    subtitle: [
+      "Statistics-first.",
+      "No reference genome required.",
+      "Unbiased discovery.",
+    ],
     primaryButton: "Benefits of Rosa Bio Technology",
   },
 
@@ -109,21 +113,17 @@ export const siteContent = {
     slides: {
       pdfPath: "/slides/techsummary.pdf",
       items: [
-        { title: "Enhanced Measurement of Genetic Complexity", subtitle: "To Drive Clinical Breakthroughs" },
+        { title: "Enhanced Measurement of Genomic Complexity", subtitle: "To Drive Clinical Breakthroughs" },
         { title: "Old Paradigm, New Reality", subtitle: "NGS technologies generating massive amounts of genomic data" },
         { title: "Reference Genomes Poorly Represent Biology", subtitle: "Current methods are dependent on comparisons to reference genomes" },
         { title: "Legacy Genomics Workflows", subtitle: "Complex, time and resource intensive, with unavoidable data loss" },
         { title: "ROSA Changes the Paradigm", subtitle: "A statistics-first approach" },
         { title: "ROSA's Semore Platform", subtitle: "Smarter, faster, cheaper genomic analysis" },
-        { title: "Comparison of Approaches", subtitle: "Alignment vs SPLASH methods" },
+        { title: "Comparison of Approaches", subtitle: "Traditional Alignment vs Statistics-First" },
         { title: "ROSA Semore Software Accuracy", subtitle: "Ability to detect all genetic features" },
         { title: "ROSA Semore Software Overview", subtitle: "Statistics-first detection of genomic complexity" },
         { title: "ROSA BIO Intellectual Property", subtitle: "Differentiated and protectable approach" },
       ],
-    },
-    externalLink: {
-      text: "Read Stanford SPLASH Papers",
-      href: "#",
     },
   },
 
@@ -137,8 +137,8 @@ export const siteContent = {
       {
         initials: "JS",
         name: "Julia Salzman",
-        title: "Founder & CSO",
-        description: `Associate Professor in the Department of Biomedical Data Science, and by courtesy in Biology and Statistics at Stanford University. A.B. in Mathematics from Princeton University magna cum laude and Ph.D. from Stanford University in Statistics. Developed statistical algorithms that discovered circular RNA and the SPLASH suite of statistics-first genomic algorithms. Research funded by NIH, NSF, CZI. Recognized with Alfred P. Sloan Fellowship, McCormick-Gabilan Fellowship, and NSF CAREER Award.`,
+        title: "Founder",
+        description: `Associate Professor in the Department of Biomedical Data Science, and by courtesy in Biology and Statistics at Stanford University. A.B. in Mathematics from Princeton University magna cum laude and Ph.D. from Stanford University in Statistics. Developed statistical algorithms that discovered circular RNA and statistics-first genomic algorithms. Research funded by NIH, NSF, CZI. Recognized with Alfred P. Sloan Fellowship, McCormick-Gabilan Fellowship, and NSF CAREER Award.`,
       },
       {
         initials: "MR",

@@ -67,7 +67,11 @@ export function Hero() {
           variants={itemVariants}
           className="mx-auto mt-6 max-w-2xl text-lg text-slate-lighter md:mt-8 md:text-xl lg:text-2xl"
         >
-          {siteContent.hero.subtitle}
+          {Array.isArray(siteContent.hero.subtitle)
+            ? siteContent.hero.subtitle.map((line, i) => (
+                <span key={i} className="block">{line}</span>
+              ))
+            : siteContent.hero.subtitle}
         </motion.p>
 
         <motion.div variants={itemVariants} className="mt-10 md:mt-12">

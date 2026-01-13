@@ -18,7 +18,6 @@ export const metadata: Metadata = {
     "nucleic acid",
     "sequence analysis",
     "bioinformatics",
-    "SPLASH",
   ],
 };
 
