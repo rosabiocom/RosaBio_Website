@@ -1,15 +1,10 @@
-# RosaBio Website - Template 1
+# RosaBio Website
 
 Dark theme with particle effects background.
 
 ## Getting Started
 
-```bash
-npm install
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000)
+Open [https://www.rosabio.com/](https://www.rosabio.com/)
 
 ## Editing Site Content
 
@@ -19,14 +14,14 @@ All site text is centralized in a single file for easy editing:
 
 ### Editable Sections
 
-| Section | What You Can Edit |
-|---------|-------------------|
-| `hero` | Main title, highlighted text, subtitle, button label |
+| Section      | What You Can Edit                                                   |
+| ------------ | ------------------------------------------------------------------- |
+| `hero`       | Main title, highlighted text, subtitle, button label                |
 | `valueProps` | "Smarter. Better. Faster." section - title, subtitle, 3 value cards |
-| `technology` | Technology section title, paragraphs, external link |
-| `leadership` | Section title, subtitle, team member cards (name, title, bio) |
-| `navbar` | Logo text, navigation links |
-| `footer` | Logo text, contact text, email, copyright |
+| `technology` | Technology section title, paragraphs, external link                 |
+| `leadership` | Section title, subtitle, team member cards (name, title, bio)       |
+| `navbar`     | Logo text, navigation links                                         |
+| `footer`     | Logo text, contact text, email, copyright                           |
 
 ### How to Edit
 
