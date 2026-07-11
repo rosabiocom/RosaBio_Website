@@ -44,7 +44,7 @@ export const siteContent = {
       "Agnostic to nucleic acid type: DNA (WGS and targeted), RNA, short and long read, exome, non-coding regions, ctDNA, bisulfite, etc.",
       "Detects structure-based changes, not based on gene panels",
       "Can be used with tissue sample or liquid biopsy (plasma cfDNA)",
-      "Semore software output = AI-ready",
+      "Software = AI ready",
       "Diverse applications: Dx, Tx, other",
     ],
   },
@@ -99,11 +99,6 @@ export const siteContent = {
         title: "White Paper",
         description: "Read our white paper on the benefits of a statistics-first approach to genomic analysis.",
         href: "#",
-      },
-      {
-        title: "Slide Set",
-        description: "View our technology overview presentation.",
-        isSlideLink: true,
       },
       {
         title: "Precision Medicine Applications",
