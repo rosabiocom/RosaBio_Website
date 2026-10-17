@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 
 const iconMap: Record<string, React.ElementType> = {
   "Why Statistics First": BarChart3,
-  "White Paper": FileText,
+  "White Papers": FileText,
   "Slide Set": Presentation,
   "Precision Medicine Applications": Microscope,
 };
@@ -62,6 +62,30 @@ export function Technology() {
                   <p className="mt-1 text-sm text-slate-light">
                     {item.description}
                   </p>
+                  {item.papers && (
+                    <ul className="mt-4 space-y-3">
+                      {item.papers.map((paper) => (
+                        <li key={paper.file}>
+                          <a
+                            href={paper.file}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-start gap-2 text-sm font-medium text-electric-blue transition-colors hover:text-electric-blue-light hover:underline"
+                          >
+                            <FileText className="mt-0.5 h-4 w-4 shrink-0" />
+                            <span>
+                              {paper.title}
+                              {paper.subtitle && (
+                                <span className="ml-2 font-normal text-slate-light">
+                                  ({paper.subtitle})
+                                </span>
+                              )}
+                            </span>
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
               </div>
             );

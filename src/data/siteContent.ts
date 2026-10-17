@@ -20,9 +20,9 @@ export const siteContent = {
   // ===========================================================================
   hero: {
     title: {
-      part1: "Enhanced Measurement of",
+      part1: "Stratification of",
       highlight: "Genomic Sequence Complexity",
-      part2: "to Drive Clinical Insights",
+      part2: "and Phenotypes for Precision Medicine",
     },
     subtitle: [
       "Statistics-first.",
@@ -30,6 +30,12 @@ export const siteContent = {
       "Unbiased discovery.",
     ],
     primaryButton: "Benefits of Rosa Bio Technology",
+    updateNotice: {
+      text: "The website is being updated with additional content.",
+      contactPrefix: "Please contact:",
+      email: "BD@rosabio.com",
+      contactSuffix: "for more information.",
+    },
   },
 
   // ===========================================================================
@@ -96,9 +102,24 @@ export const siteContent = {
         description: "Our statistics-first approach analyzes raw data directly, eliminating reference genome bias and enabling detection of all genomic complexity.",
       },
       {
-        title: "White Paper",
-        description: "Read our white paper on the benefits of a statistics-first approach to genomic analysis.",
-        href: "#",
+        title: "White Papers",
+        description: "Read our white papers on the benefits of a statistics-first approach to genomic analysis.",
+        papers: [
+          {
+            title: "Benefits of a Statistics-first Approach to Analyzing Nucleic Acid Sequence Data",
+            file: "/whitepapers/rosabio-benefits-of-statistics-first-approach.pdf",
+          },
+          {
+            title: "Statistics-First Genomic Analysis: Expanding Detection beyond the Limits of Reference Alignment in Precision Medicine",
+            subtitle: "October 2026 edition",
+            file: "/whitepapers/rosabio-statistics-first-genomic-analysis-oct-2026.pdf",
+          },
+          {
+            title: "Statistics-First Genomic Analysis: Expanding Detection beyond the Limits of Reference Alignment in Precision Medicine",
+            subtitle: "August 2026 edition",
+            file: "/whitepapers/rosabio-statistics-first-genomic-analysis-aug-2026.pdf",
+          },
+        ],
       },
       {
         title: "Precision Medicine Applications",

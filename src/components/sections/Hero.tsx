@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/Button";
 import { ParticlesBackground } from "@/components/particles/ParticlesBackground";
 import { motion } from "framer-motion";
-import { ArrowDown } from "lucide-react";
+import { ArrowDown, Info } from "lucide-react";
 import { siteContent } from "@/data/siteContent";
 
 const containerVariants = {
@@ -79,6 +79,25 @@ export function Hero() {
             {siteContent.hero.primaryButton}
             <ArrowDown className="h-5 w-5" />
           </Button>
+        </motion.div>
+
+        {/* Site update notice */}
+        <motion.div
+          variants={itemVariants}
+          className="mx-auto mt-10 flex max-w-xl items-start gap-3 rounded-xl border border-electric-blue/30 bg-navy-dark/70 px-5 py-4 text-left text-sm text-slate-lighter backdrop-blur-sm md:text-base"
+        >
+          <Info className="mt-0.5 h-5 w-5 shrink-0 text-electric-blue" />
+          <p>
+            {siteContent.hero.updateNotice.text}{" "}
+            {siteContent.hero.updateNotice.contactPrefix}{" "}
+            <a
+              href={`mailto:${siteContent.hero.updateNotice.email}`}
+              className="font-semibold text-electric-blue transition-colors hover:text-electric-blue-light"
+            >
+              {siteContent.hero.updateNotice.email}
+            </a>{" "}
+            {siteContent.hero.updateNotice.contactSuffix}
+          </p>
         </motion.div>
       </motion.div>
 
