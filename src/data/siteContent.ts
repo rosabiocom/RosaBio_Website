@@ -111,13 +111,11 @@ export const siteContent = {
           },
           {
             title: "Statistics-First Genomic Analysis: Expanding Detection beyond the Limits of Reference Alignment in Precision Medicine",
-            subtitle: "October 2026 edition",
             file: "/whitepapers/rosabio-statistics-first-genomic-analysis-oct-2026.pdf",
           },
           {
-            title: "Statistics-First Genomic Analysis: Expanding Detection beyond the Limits of Reference Alignment in Precision Medicine",
-            subtitle: "August 2026 edition",
-            file: "/whitepapers/rosabio-statistics-first-genomic-analysis-aug-2026.pdf",
+            title: "Novel Algorithms for Interpretable, Ultra-Efficient Precision Medicine",
+            file: "/whitepapers/rosabio-novel-algorithms-precision-medicine.pdf",
           },
         ],
       },

@@ -73,14 +73,7 @@ export function Technology() {
                             className="inline-flex items-start gap-2 text-sm font-medium text-electric-blue transition-colors hover:text-electric-blue-light hover:underline"
                           >
                             <FileText className="mt-0.5 h-4 w-4 shrink-0" />
-                            <span>
-                              {paper.title}
-                              {paper.subtitle && (
-                                <span className="ml-2 font-normal text-slate-light">
-                                  ({paper.subtitle})
-                                </span>
-                              )}
-                            </span>
+                            <span>{paper.title}</span>
                           </a>
                         </li>
                       ))}
