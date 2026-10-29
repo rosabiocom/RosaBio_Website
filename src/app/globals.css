@@ -1,4 +1,6 @@
 @import "tailwindcss";
+/* Static p2single Highlights export: don't scan its 50+ MB for class names */
+@source not "../../public/highlights";
 
 :root {
   /* Navy Blues */

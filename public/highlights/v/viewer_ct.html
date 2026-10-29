@@ -1,0 +1,841 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>p2single gene viewer</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><style>
+:root{
+  --bg:#FAF9F6; --panel:#FFFFFF; --ink:#16181D; --soft:#5A5F6B; --faint:#8A8F9B;
+  --line:#E3E1DA; --rule:#CFCCC2;
+  --lead:#1F5F4E; --leadbg:#E8F1ED; --limit:#8A5A12; --limitbg:#F6EEE0;
+  --bar:#C9C6BC; --dot:#1F5F4E;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#12141A; --panel:#171A21; --ink:#ECEDF0; --soft:#A2A8B4; --faint:#767D8B;
+  --line:#242830; --rule:#333944;
+  --lead:#63C3A5; --leadbg:#16261F; --limit:#D9A441; --limitbg:#2A2215;
+  --bar:#3A404B; --dot:#63C3A5;
+}}
+:root[data-theme="dark"]{
+  --bg:#12141A; --panel:#171A21; --ink:#ECEDF0; --soft:#A2A8B4; --faint:#767D8B;
+  --line:#242830; --rule:#333944;
+  --lead:#63C3A5; --leadbg:#16261F; --limit:#D9A441; --limitbg:#2A2215;
+  --bar:#3A404B; --dot:#63C3A5;
+}
+*{box-sizing:border-box}
+:root{--et-surface:var(--panel);--et-line:var(--line);--et-accent:var(--lead);--et-muted:var(--faint)}
+body{position:relative;background:var(--bg);color:var(--ink);font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  line-height:1.55;-webkit-font-smoothing:antialiased}
+.watermark{position:absolute;inset:0;z-index:5;pointer-events:none;background-repeat:repeat;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='160'%3E%3Ctext x='160' y='90' transform='rotate(-28 160 90)' text-anchor='middle' font-family='IBM Plex Mono, monospace' font-size='15' font-weight='700' letter-spacing='2' fill='rgb(40,40,40)' fill-opacity='0.055'%3EROSA BIO %C2%B7 CONFIDENTIAL%3C/text%3E%3C/svg%3E")}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .watermark{
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='160'%3E%3Ctext x='160' y='90' transform='rotate(-28 160 90)' text-anchor='middle' font-family='IBM Plex Mono, monospace' font-size='15' font-weight='700' letter-spacing='2' fill='rgb(255,255,255)' fill-opacity='0.07'%3EROSA BIO %C2%B7 CONFIDENTIAL%3C/text%3E%3C/svg%3E");}}
+:root[data-theme="dark"] .watermark{
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='160'%3E%3Ctext x='160' y='90' transform='rotate(-28 160 90)' text-anchor='middle' font-family='IBM Plex Mono, monospace' font-size='15' font-weight='700' letter-spacing='2' fill='rgb(255,255,255)' fill-opacity='0.07'%3EROSA BIO %C2%B7 CONFIDENTIAL%3C/text%3E%3C/svg%3E");}
+.struct-toc{position:fixed;top:24px;left:16px;width:196px;z-index:20;font-family:"JetBrains Mono",monospace;font-size:11.5px;display:block}
+body{padding-left:226px}
+@media(max-width:899px){.struct-toc{display:none}body{padding-left:0}}
+.struct-toc .tt{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin-bottom:10px;font-weight:700}
+.struct-toc .tocgrp{margin-bottom:3px}
+.struct-toc .toctop{position:relative;display:block;font-size:12.5px;font-weight:700;color:var(--ink);
+  text-decoration:none;padding:8px 26px 8px 10px;border-radius:8px;transition:background-color .12s ease}
+.struct-toc .toctop:hover{background:var(--panel);color:var(--lead)}
+.struct-toc .toctop.on{background:var(--panel);color:var(--lead)}
+.struct-toc .toctop::after{content:'\25B8';position:absolute;right:10px;top:9px;color:var(--faint);font-size:9px;transition:transform .15s ease}
+.struct-toc .tocgrp.open .toctop::after{transform:rotate(90deg)}
+.struct-toc .tocsub{display:none;padding:2px 0 6px 12px}
+.struct-toc .tocgrp.open .tocsub{display:block}
+.struct-toc .tocsub a{display:block;color:var(--faint);text-decoration:none;padding:5px 10px;border-radius:7px;font-size:11px}
+.struct-toc .tocsub a:hover{background:var(--panel);color:var(--lead)}
+.struct-toc .tocsub a.on{background:var(--panel);color:var(--lead);font-weight:700}
+.struct-toc a:focus-visible{outline:2px solid currentColor;outline-offset:-2px}
+.struct-toc .tocgrp,.struct-toc .toctop,.struct-toc .tocsub,.struct-toc .tocsub a{
+  background:none!important;border:none!important;box-shadow:none!important;appearance:none!important;-webkit-appearance:none!important;
+}
+.struct-toc .toctop:hover,.struct-toc .toctop.on{background:var(--panel)!important}
+.struct-toc .tocsub a:hover,.struct-toc .tocsub a.on{background:var(--panel)!important}
+.updlab{font-family:"JetBrains Mono",monospace;font-size:10.5px;letter-spacing:.03em;color:var(--faint);float:right;font-weight:400;padding:1px 7px;border-radius:9px}
+.updlab.recent{color:var(--lead);font-weight:700;background:var(--leadbg)}
+
+.wrap{max-width:1000px;margin:0 auto;padding-block:40px 64px;padding-left:20px;padding-right:20px}
+h1{font-family:"Newsreader",Georgia,serif;font-weight:600;font-size:clamp(30px,4.4vw,46px);line-height:1.12;margin:0 0 10px;
+  letter-spacing:-.012em;text-wrap:balance}
+.sub{color:var(--soft);font-size:15.5px;max-width:64ch;margin:0 0 6px}
+.src{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--faint);margin-top:14px}
+.src a{color:inherit}
+h2{font-family:"Newsreader",Georgia,serif;font-weight:600;font-size:28px;margin:58px 0 6px;
+  letter-spacing:-.008em;padding-top:26px;border-top:2px solid var(--ink)}
+h2 .n{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--dot);letter-spacing:.14em;
+  display:block;margin-bottom:6px;font-weight:400}
+.lede{color:var(--soft);font-size:14.5px;max-width:72ch;margin:0 0 18px}
+table{width:100%;border-collapse:collapse}
+th,td{text-align:left;padding:10px 12px 10px 0;border-bottom:1px solid var(--line);vertical-align:baseline}
+thead th{font-family:"JetBrains Mono",monospace;font-size:11.5px;letter-spacing:.04em;text-transform:uppercase;
+  color:var(--soft);font-weight:600;border-bottom:1px solid var(--rule);padding-bottom:8px}
+.num{font-family:"JetBrains Mono",monospace;font-variant-numeric:tabular-nums;white-space:nowrap}
+.ours{font-weight:600;color:var(--lead)}
+tr.r{cursor:pointer}
+tr.r:hover td{background:var(--panel)}
+tr.r td:first-child{position:relative}
+.ds{font-weight:600}
+.meta{display:block;color:var(--faint);font-size:12px;margin-top:2px}
+.pill{display:inline-block;font-family:"JetBrains Mono",monospace;font-size:10px;padding:2px 7px;border-radius:99px;
+  background:var(--leadbg);color:var(--lead);white-space:nowrap}
+.pill.p-lim{background:var(--limitbg);color:var(--limit)}
+.pill.p-strict{background:transparent;border:1px solid var(--rule);color:var(--soft)}
+.det{display:none}
+.det.on{display:table-row}
+.det td{background:var(--panel);border-bottom:1px solid var(--rule);padding:14px 14px 16px}
+svg{display:block;max-width:100%}
+.plotcap{font-family:"JetBrains Mono",monospace;font-size:10px;color:var(--faint);letter-spacing:.06em;
+  text-transform:uppercase;margin:0 0 8px}
+.axl{fill:var(--faint);font-family:"JetBrains Mono",monospace;font-size:10px}
+.gl{stroke:var(--line)}
+.rowline{stroke:var(--rule)}
+.tick{stroke:var(--soft);stroke-width:2.4;stroke-linecap:round}
+.tick.dl{stroke:var(--limit)}
+.mydot{fill:var(--dot)}
+.mlab{fill:var(--soft);font-family:"JetBrains Mono",monospace;font-size:10px}
+.legend{font-family:"JetBrains Mono",monospace;font-size:10.5px;color:var(--faint);margin-top:8px}
+.legend b{color:var(--lead)}
+.bar{display:inline-block;width:76px;height:6px;border-radius:3px;background:var(--line);margin-right:8px;
+  vertical-align:middle;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--bar)}
+tr.low .bar i{background:var(--limit)}
+tr.low .num.k{color:var(--limit)}
+.note{color:var(--soft);font-size:13.5px;max-width:74ch;margin:14px 0 0}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:26px;margin-top:8px}
+.card{border:1px solid var(--line);border-radius:8px;padding:16px 18px;background:var(--panel)}
+.card h3{font-size:13px;margin:0 0 10px;font-family:"JetBrains Mono",monospace;font-weight:400;
+  letter-spacing:.06em;text-transform:uppercase;color:var(--faint)}
+.big{font-family:"JetBrains Mono",monospace;font-size:27px;font-variant-numeric:tabular-nums;color:var(--lead)}
+.big.lim{color:var(--limit)}
+.foot{margin-top:52px;padding-top:16px;border-top:1px solid var(--line);color:var(--faint);font-size:12px}
+
+
+
+.find{margin:34px 0 0;padding:20px 22px;border:1px solid var(--line);border-left:3px solid var(--lead);
+  border-radius:8px;background:var(--panel)}
+.fnum{font-family:"JetBrains Mono",monospace;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--lead);font-weight:600;margin-bottom:8px}
+.q{margin:0 0 10px;font-family:"Newsreader",Georgia,serif;font-size:25px;line-height:1.28;color:var(--ink);
+  max-width:64ch;letter-spacing:-.006em}
+.claim{margin:0;font-size:16px;line-height:1.5;color:var(--lead);font-weight:600;max-width:68ch}
+.claim::before{content:"ANSWER  ";font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:.07em;
+  color:var(--faint);font-weight:400}
+.why{margin:10px 0 0;font-size:14px;color:var(--soft);max-width:72ch}
+.pred{margin:8px 0 0;font-size:13.5px;color:var(--soft);max-width:72ch}
+.pred::before{content:"IF THAT IS TRUE, THEN 4 ";font-family:"JetBrains Mono",monospace;font-size:10px;
+  letter-spacing:.07em;color:var(--faint)}
+.ev{margin-top:14px;font-size:13px;color:var(--soft);max-width:72ch}
+.ev b{color:var(--ink);font-variant-numeric:tabular-nums}
+
+.ovl{position:fixed;inset:0;background:rgba(10,14,20,.45);opacity:0;pointer-events:none;transition:opacity .15s;z-index:40}
+.ovl.on{opacity:1;pointer-events:auto}
+.panel{position:fixed;top:0;right:0;height:100%;width:min(460px,92vw);background:var(--panel);z-index:41;
+  border-left:1px solid var(--rule);transform:translateX(100%);transition:transform .18s;overflow-y:auto;
+  padding:0 0 24px}
+.panel.on{transform:none}
+.phd{position:sticky;top:0;background:var(--panel);border-bottom:1px solid var(--line);padding:18px 20px 14px;z-index:1}
+.px{position:absolute;top:14px;right:16px;background:none;border:0;font-size:22px;line-height:1;color:var(--faint);
+  cursor:pointer}
+.px:hover{color:var(--ink)}
+.pnm{font-size:19px;font-weight:600;padding-right:28px}
+.pnm .tg{display:inline-block;margin-left:8px;font-family:"JetBrains Mono",monospace;font-size:10px;
+  padding:2px 8px;border-radius:99px;border:1px solid var(--rule);color:var(--soft);vertical-align:middle}
+.pnm .tg.f-dl{border-color:#AE2F6E;color:#AE2F6E}
+.pnm .tg.f-lin{border-color:#3E58BC;color:#3E58BC}
+.pnm .tg.f-cls{border-color:#846A0C;color:#846A0C}
+.psub{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--faint);margin-top:4px}
+.psub b{color:var(--ink)}
+.pbody{padding:16px 20px 0}
+.prow{display:grid;grid-template-columns:118px 1fr;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}
+.pk{font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--faint);padding-top:2px}
+.pv{font-size:13.5px;line-height:1.5}
+.pv em{color:var(--faint);font-style:italic}
+.pv a{color:var(--lead)}
+.pfacts{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;align-items:baseline}
+.pfacts .fk2{font-family:"JetBrains Mono",monospace;font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;
+  color:var(--faint)}
+.pfacts .fv2{font-size:13px;line-height:1.45}
+.pfoot{margin:18px 20px 0;padding:12px 14px;border:1px solid var(--line);border-radius:6px;
+  font-size:12px;color:var(--faint);line-height:1.5}
+
+.p3h-3p_only{fill:var(--lead)}.p3h-5p_only{fill:var(--limit)}.p3h-both{fill:var(--faint)}
+.p3med{stroke:var(--ink);stroke-width:1.4;stroke-dasharray:3 2}
+/* Part 3 — the reference page's Part 4 stylesheet (_head.html rules), scoped to .p3x so nothing leaks
+   into Parts 1-2 and the host page's table/.note/.legend/.pill/.bar rules do not leak in. */
+.p3x{
+  --bg:#f5f4f7; --surface:#fffffe; --surface-2:#ece9f1; --surface-3:#f7f5fa;
+  --ink:#1d1b24; --ink-2:#5d5a6b; --ink-3:#8b879a; --hairline:#e3e1ea;
+  --coef-pos:#2a78d6; --coef-neg:#d43d5c; --good:#0ca30c; --warn:#b6820a;
+  --seq-100:#efe6ec; --seq-200:#dcc4d6; --seq-300:#c39cbd; --seq-400:#a06fa0;
+  --seq-500:#844a83; --seq-600:#6d2f66;
+  --don-1:#3f6fa8; --don-2:#8a4f9e; --don-3:#b0713a; --don-4:#2f8074;
+  --don-5:#a33f5e; --don-6:#5b6bab;
+  --hum:#3f6fa8; --mus:#2f8074;
+  --c0:#3f6fa8; --c1:#b0713a; --c2:#2f8074; --c3:#8a4f9e; --c4:#a33f5e; --c5:#5b6bab;
+  --c6:#6b7f1f; --c7:#b8860b; --c8:#1f7f96; --c9:#7a5236; --c10:#c2548a; --c11:#55606e;
+  --shadow:0 1px 2px rgba(29,27,36,.06), 0 8px 24px -12px rgba(29,27,36,.18);
+  --serif:"Iowan Old Style",Charter,"Source Serif Pro",Georgia,"Times New Roman",serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  color:var(--ink);font-family:var(--serif);font-size:17px;line-height:1.62;margin-top:10px
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .p3x{
+  --bg:#131218; --surface:#1b1a22; --surface-2:#242230; --surface-3:#1f1e27;
+  --ink:#edebf3; --ink-2:#b3afc2; --ink-3:#807c90; --hairline:#2f2d3a;
+  --coef-pos:#5ea0ef; --coef-neg:#f0687f; --good:#48c948; --warn:#e0a72c;
+  --seq-100:#2a2333; --seq-200:#3d2e47; --seq-300:#573a60; --seq-400:#7a4a80;
+  --seq-500:#a05fa0; --seq-600:#c988c2;
+  --don-1:#7aa5da; --don-2:#bb8ad0; --don-3:#dda06a; --don-4:#5fb8aa;
+  --don-5:#e0798f; --don-6:#8f9de0;
+  --hum:#7aa5da; --mus:#5fb8aa;
+  --c0:#7aa5da; --c1:#dda06a; --c2:#5fb8aa; --c3:#bb8ad0; --c4:#e0798f; --c5:#8f9de0;
+  --c6:#a9c25a; --c7:#e3bb4f; --c8:#5cc0d6; --c9:#c49a78; --c10:#ea8fbb; --c11:#9aa5b3;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 30px -14px rgba(0,0,0,.6);
+}}
+:root[data-theme="dark"] .p3x{
+  --bg:#131218; --surface:#1b1a22; --surface-2:#242230; --surface-3:#1f1e27;
+  --ink:#edebf3; --ink-2:#b3afc2; --ink-3:#807c90; --hairline:#2f2d3a;
+  --coef-pos:#5ea0ef; --coef-neg:#f0687f; --good:#48c948; --warn:#e0a72c;
+  --seq-100:#2a2333; --seq-200:#3d2e47; --seq-300:#573a60; --seq-400:#7a4a80;
+  --seq-500:#a05fa0; --seq-600:#c988c2;
+  --don-1:#7aa5da; --don-2:#bb8ad0; --don-3:#dda06a; --don-4:#5fb8aa;
+  --don-5:#e0798f; --don-6:#8f9de0;
+  --hum:#7aa5da; --mus:#5fb8aa;
+  --c0:#7aa5da; --c1:#dda06a; --c2:#5fb8aa; --c3:#bb8ad0; --c4:#e0798f; --c5:#8f9de0;
+  --c6:#a9c25a; --c7:#e3bb4f; --c8:#5cc0d6; --c9:#c49a78; --c10:#ea8fbb; --c11:#9aa5b3;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 30px -14px rgba(0,0,0,.6);
+}
+.p3x p{margin:0 0 1em}
+.p3x a{color:var(--coef-pos)}
+.p3x code,.p3x .mono{font-family:var(--mono)}
+
+/* ---------- section ---------- */
+.p3x section{padding:38px 0;border-top:1px solid var(--hairline);scroll-margin-top:14px}
+.p3x section:first-of-type{border-top:none}
+.p3x .eyebrow{font-family:var(--mono);font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--ink-3);margin-bottom:9px}
+.p3x section h3{font-size:clamp(19px,2.6vw,25px);line-height:1.25;max-width:34ch;margin:0;font-weight:600;
+  letter-spacing:-.012em;text-wrap:balance}
+.p3x .sub{color:var(--ink-2);max-width:74ch;margin:12px 0 22px;font-size:16px}
+.p3x .note{font-size:14.5px;color:var(--ink-2);max-width:74ch;margin:16px 0 0}
+.p3x .note.warnbox{border-left:2px solid var(--warn);padding-left:14px}
+
+/* ---------- how-to-read callout ---------- */
+.p3x .readme{background:var(--surface-2);border-left:3px solid var(--seq-500);border-radius:0 8px 8px 0;
+  padding:14px 18px;margin:0 0 18px;font-size:15px;color:var(--ink-2);max-width:78ch}
+.p3x .readme b{color:var(--ink)}
+.p3x .readme .rk{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--seq-600);display:block;margin-bottom:7px}
+
+/* ---------- controls ---------- */
+.p3x .ctl{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px;
+  font-family:var(--mono);font-size:12.5px}
+.p3x .ctl label{color:var(--ink-3);letter-spacing:.06em;text-transform:uppercase;font-size:11px}
+.p3x button.tab,.p3x select{font-family:var(--mono);font-size:12.5px;color:var(--ink);
+  background:var(--surface);border:1px solid var(--hairline);border-radius:6px;padding:5px 11px;
+  cursor:pointer;max-width:100%}
+.p3x button.tab:hover,.p3x select:hover{border-color:var(--ink-3)}
+.p3x button.tab[aria-pressed=true]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.p3x button.tab:disabled{opacity:.45;cursor:not-allowed}
+.p3x button.tab:focus-visible,.p3x select:focus-visible,.p3x input:focus-visible{outline:2px solid var(--coef-pos);
+  outline-offset:2px}
+.p3x .mkwhy{margin:0;font-family:var(--mono);font-size:11px;color:var(--warn);text-transform:none;letter-spacing:0}
+
+/* ---------- tables ---------- */
+.p3x .scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.p3x table{border-collapse:collapse;width:100%;font-size:13.5px;font-family:var(--mono);
+  font-variant-numeric:tabular-nums}
+.p3x th{text-align:left;font-weight:600;color:var(--ink-3);font-size:11px;letter-spacing:.09em;
+  text-transform:uppercase;padding:8px 11px;border-bottom:1px solid var(--hairline);
+  white-space:nowrap;position:sticky;top:0;background:var(--bg);vertical-align:bottom}
+.p3x td{padding:7px 11px;border-bottom:1px solid var(--hairline);white-space:nowrap;vertical-align:baseline}
+.p3x tbody tr:hover{background:var(--surface-3)}
+.p3x .pos{color:var(--coef-pos)}.p3x .neg{color:var(--coef-neg)}
+.p3x .dim{color:var(--ink-3)}
+.p3x .pill{display:inline-block;font-family:var(--mono);font-size:10.5px;letter-spacing:.04em;
+  padding:1px 7px;border-radius:20px;border:1px solid currentColor;line-height:16px;background:transparent;
+  white-space:nowrap}
+
+/* ---------- legend ---------- */
+.p3x .legend{display:flex;gap:8px 20px;flex-wrap:wrap;align-items:center;margin-top:14px;
+  font-family:var(--mono);font-size:11.5px;color:var(--ink-3)}
+.p3x .sw{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-2px;margin-right:5px}
+
+/* ---------- tooltip ---------- */
+.p3x #tip{position:fixed;z-index:99;pointer-events:none;background:var(--surface);
+  border:1px solid var(--hairline);border-radius:8px;padding:9px 11px;font-family:var(--mono);
+  font-size:12px;box-shadow:var(--shadow);max-width:280px;opacity:0;transition:opacity .09s;
+  color:var(--ink);line-height:1.5;left:0;top:0}
+.p3x #tip.on{opacity:1}
+.p3x #tip b{font-size:12.5px}
+
+/* ---------- charts ---------- */
+.p3x svg{display:block;max-width:100%;height:auto}
+.p3x .ax{stroke:var(--hairline);stroke-width:1}
+.p3x .axlab{font-family:var(--mono);font-size:10.5px;fill:var(--ink-3)}
+.p3x .axtitle{font-family:var(--mono);font-size:11.5px;fill:var(--ink-2);letter-spacing:.06em}
+.p3x .gridline{stroke:var(--hairline);stroke-width:1;stroke-dasharray:2 4}
+
+/* ---------- gene closeup ---------- */
+.p3x .closeup{display:grid;grid-template-columns:minmax(240px,320px) 1fr;gap:22px}
+@media(max-width:820px){.p3x .closeup{grid-template-columns:1fr}}
+.p3x .closeup>div{min-width:0}
+.p3x .genelist{max-height:430px;overflow-y:auto;border:1px solid var(--hairline);border-radius:9px;
+  background:var(--surface)}
+.p3x .gitem{display:flex;align-items:center;gap:9px;padding:5px 11px;border-bottom:1px solid var(--hairline);
+  font-family:var(--mono);font-size:12px;cursor:pointer;margin:0}
+.p3x .gitem:last-child{border-bottom:none}
+.p3x .gitem:hover{background:var(--surface-3)}
+.p3x .gitem .bar{display:block;height:8px;border-radius:2px;flex:0 0 auto;margin:0;overflow:visible}
+.p3x .gitem .gn{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.p3x .gitem .gv{color:var(--ink-3);font-variant-numeric:tabular-nums}
+.p3x .summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:1px;
+  background:var(--hairline);border:1px solid var(--hairline);border-radius:8px;overflow:hidden;
+  margin-bottom:14px}
+.p3x .summary div{background:var(--surface);padding:9px 11px;min-width:0}
+.p3x .summary .k{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--ink-3)}
+.p3x .summary .v{font-family:var(--mono);font-size:17px;font-variant-numeric:tabular-nums;margin-top:2px;
+  overflow-wrap:anywhere}
+
+/* ---------- footer ---------- */
+.p3x .p3foot{border-top:1px solid var(--ink-3);margin-top:20px;padding:34px 0 20px;
+  font-size:14.5px;color:var(--ink-2)}
+.p3x .p3foot h4{font-family:var(--mono);font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--ink-3);margin:0 0 10px;font-weight:600}
+.p3x .p3foot .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:26px}
+.p3x .p3foot ul{margin:0;padding-left:18px}
+.p3x .p3foot li{margin-bottom:6px}
+.p3x .p3foot .prov{font-family:var(--mono);font-size:11.5px;color:var(--ink-3);word-break:break-all;
+  line-height:1.7}
+@media(prefers-reduced-motion:reduce){.p3x *{transition:none!important;animation:none!important}}
+
+/* 2026-09-17: plain structured text — label/value rows and short bullets replace the long paragraphs */
+.p3x .p3dl{display:grid;grid-template-columns:minmax(120px,auto) 1fr;gap:6px 16px;margin:8px 0 0;align-items:baseline}
+.p3x .p3dl dt{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:10.5px;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--ink-3);white-space:nowrap}
+.p3x .p3dl dd{margin:0;font-size:13.5px;line-height:1.5;color:var(--ink)}
+.p3x .p3dl dd .p3bl{margin:0}
+.p3x .p3bl{margin:6px 0 0;padding-left:18px}
+.p3x .p3bl li{margin:4px 0;font-size:13.5px;line-height:1.5;color:var(--ink-2)}
+.p3x .p3bl li b{color:var(--ink)}
+@media(max-width:560px){.p3x .p3dl{grid-template-columns:1fr;gap:2px 0}.p3x .p3dl dt{margin-top:8px}}
+
+/* cross-study tabs: one grouping at a time for all three tools */
+.p3x .p3gtabs{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 18px}
+.p3x .p3gt{display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:10px 16px;border-radius:10px;
+  border:1px solid var(--hairline);background:var(--surface);color:var(--ink);cursor:pointer;font:inherit;text-align:left}
+.p3x .p3gt .p3gtn{font-size:14px;font-weight:600}
+.p3x .p3gt .p3gtc{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:10.5px;color:var(--ink-3)}
+.p3x .p3gt:hover{border-color:var(--coef-pos)}
+.p3x .p3gt.on{border-color:var(--coef-pos);background:var(--coef-pos);box-shadow:none}
+.p3x .p3gt.on .p3gtn,.p3x .p3gt.on .p3gtc{color:#fff}
+.p3x .p3gt.on .p3gtno{background:#fff;color:var(--coef-pos)}
+.p3x .p3gtno{display:inline-block;min-width:17px;height:17px;line-height:17px;text-align:center;
+  border-radius:50%;background:var(--hairline);color:var(--ink-3);font-family:"JetBrains Mono",monospace;
+  font-size:10.5px;margin-right:7px;vertical-align:1px}
+.p3x .p3gthead{margin:18px 0 8px;font-size:13.5px;color:var(--ink-2)}
+.p3x .p3gthead b{color:var(--ink)}
+.p3x .p3gt:focus-visible{outline:2px solid var(--coef-pos);outline-offset:2px}
+/* clickable gene-track marks and the selected-sequence panel */
+.p3x g.lp{cursor:pointer}
+.p3x g.lp:hover .lp-stem,.p3x g.lp.on .lp-stem{stroke-width:3}
+.p3x g.lp.on .lp-head{r:7;stroke:var(--ink);stroke-width:2}
+.p3x g.lp:focus{outline:none}
+.p3x g.lp:focus-visible .lp-head{stroke:var(--ink);stroke-width:2}
+/* the flag marks below the gene-track axis (spliced / soft-clipped / mismatch) */
+.p3x g.lpf{cursor:pointer}
+.p3x g.lpf:hover .lp-flag,.p3x g.lpf:focus-visible .lp-flag{stroke:var(--ink);stroke-width:2}
+.p3x g.lpf:focus{outline:none}
+.p3x .brseq{margin:12px 0 0;padding:12px 16px;border:1px solid var(--hairline);border-left:3px solid var(--coef-pos);
+  border-radius:8px;background:var(--surface-3)}
+.p3x .seq39{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:13.5px;letter-spacing:.04em;overflow-wrap:anywhere}
+.p3x .seq39 .an{color:var(--coef-pos);background:var(--surface-2);padding:0 2px;border-radius:3px}
+/* the bases the cs string names, coloured inside the 39-mer the panel prints (2026-09-19): a substituted base in
+   the mismatch colour, our own inserted bases underlined in the warn colour, and a deletion -- which has no base of
+   ours to colour -- as a small wedge BETWEEN the two bases it sits between. */
+.p3x .seq39 .mm{color:var(--coef-neg);font-weight:700;background:var(--surface-2);border-radius:3px;padding:0 1px}
+.p3x .seq39 .ii{color:var(--warn);font-weight:700;text-decoration:underline;text-underline-offset:2px}
+.p3x .seq39 .mq{color:var(--ink-2);border-bottom:1px dotted var(--coef-neg)}
+.p3x .seq39 .gapm{color:var(--warn);font-style:normal;font-size:10px;vertical-align:.12em;margin:0 -1px;letter-spacing:0}
+.p3x .brseq .cp{margin-left:10px;font:inherit;font-size:11px;padding:2px 8px;border:1px solid var(--hairline);
+  border-radius:6px;background:var(--surface);color:var(--ink-2);cursor:pointer}
+
+/* overlapping lollipop heads: the ring is the page surface, so two touching heads still read as two
+   (user, 2026-09-19). .lp-hit is an invisible 9 px circle that makes the head, not a neighbour's
+   stem, the thing a click lands on. */
+.p3x g.lp .lp-hit{cursor:pointer}
+.p3x g.lp:hover .lp-head,.p3x g.lp:focus-visible .lp-head{stroke:var(--ink);stroke-width:2.2}
+
+/* the gene's match / mismatch summary — highlighted because it is the first thing a reader looks
+   for and was being missed in the run of grey rows (user, 2026-09-19) */
+.p3x .mmrow{display:inline-block;padding:5px 10px;border-radius:6px;background:var(--surface);
+  border-left:3px solid var(--coef-pos);line-height:1.6}
+.p3x .mmrow b{color:var(--ink)}
+
+/* ---- 3.3 · the sequences with no genome coordinate (2026-09-23) --------------------------
+   A track mark needs a position, so these sequences are not drawable at all; the panel is their
+   only place on the page. It sits between the gene-track summary and the gene list, reads as one
+   block rather than a card grid, and its bars use the sequence ramp -- never the class colours,
+   which mean "the cell type this sequence favours" everywhere else on the figure. */
+.p3x .unpl:empty{display:none}
+.p3x .unpl{margin:0 0 16px;padding:14px 16px;border:1px solid var(--hairline);
+  border-left:3px solid var(--warn);border-radius:0 9px 9px 0;background:var(--surface-3)}
+.p3x .ub-hd{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:10px}
+.p3x .ub-sub{display:block;font-family:var(--mono);font-size:11px;font-weight:400;
+  letter-spacing:.04em;color:var(--ink-3);margin-top:2px}
+.p3x .ub-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1px;
+  background:var(--hairline);border:1px solid var(--hairline);border-radius:7px;overflow:hidden;
+  margin-bottom:12px}
+.p3x .ub-stats>div{background:var(--surface);padding:8px 10px;min-width:0}
+.p3x .ub-stats .k{font-family:var(--mono);font-size:9.5px;letter-spacing:.07em;text-transform:uppercase;
+  color:var(--ink-3)}
+.p3x .ub-stats .v{font-family:var(--mono);font-size:16px;font-variant-numeric:tabular-nums;margin-top:2px}
+.p3x .ub-stats .dim{font-size:12px}
+.p3x .ub-bars{margin:0 0 12px}
+.p3x .ub-row{display:flex;align-items:center;gap:9px;margin:3px 0;font-family:var(--mono);font-size:12px}
+.p3x .ub-bar{display:inline-block;height:9px;border-radius:2px;flex:0 0 auto}
+.p3x .ub-m{background:var(--seq-500)}
+.p3x .ub-h{background:var(--seq-300)}
+.p3x .ub-n0{background:var(--ink-3)}
+.p3x .ub-n{font-variant-numeric:tabular-nums;color:var(--ink);min-width:60px;text-align:right}
+.p3x .ub-l{color:var(--ink-2)}
+.p3x .ub-cap{margin-left:10px;font-family:var(--mono);font-size:11px;color:var(--ink-3)}
+.p3x #ub-tbl{margin-top:12px}
+.p3x #ub-tbl table{font-size:12.5px}
+.p3x .ub-tr{cursor:pointer}
+.p3x .ub-tr.on td{background:var(--surface-2)}
+.p3x #ub-card .brseq{margin-top:10px}
+/* the row is the control, so it has to look like one BEFORE the click: a marker column that
+   flips open, a hover that covers the whole row, and a visible keyboard focus. */
+.p3x .ub-how{margin:8px 0 0;font-size:13px;color:var(--ink-2)}
+.p3x .ub-ar{color:var(--ink-3);width:14px;padding-right:0;text-align:center}
+.p3x .ub-tr:hover td{background:var(--surface-2)}
+.p3x .ub-tr:hover .ub-ar{color:var(--coef-pos)}
+.p3x .ub-tr:focus-visible{outline:2px solid var(--coef-pos);outline-offset:-2px}
+.p3x .ub-tr.on .ub-ar{color:var(--coef-pos)}
+.p3x .ub-tr.on td{background:var(--surface-2);font-weight:600}
+/* the genome-only band and the locus text: deliberately NOT the sequence ramp the transcript
+   bands use, because a locus is a different kind of answer from a transcript match. */
+.p3x .ub-g{background:var(--warn)}
+.p3x .ub-loc{color:var(--warn)}
+
+
+details.fold{margin:18px 0 0;border:1px solid var(--line);border-radius:8px;background:var(--panel)}
+details.fold>summary{cursor:pointer;list-style:none;padding:11px 16px;font-family:"JetBrains Mono",monospace;font-size:12px;
+  letter-spacing:.03em;color:var(--soft);display:flex;align-items:center;gap:10px}
+details.fold>summary::-webkit-details-marker{display:none}
+details.fold>summary::before{content:"B8";color:var(--lead);font-size:13px;transition:transform .15s}
+details.fold[open]>summary::before{transform:rotate(90deg)}
+details.fold>summary:hover{color:var(--ink)}
+details.fold[open]>summary{border-bottom:1px solid var(--line)}
+details.fold>table,details.fold>.intro{margin:12px 16px}
+details.fold>table{width:calc(100% - 32px)}
+.hl-dl{display:grid;grid-template-columns:minmax(110px,auto) 1fr;gap:5px 16px;margin:6px 0 18px;max-width:78ch}
+.hl-dl dt{font-family:"JetBrains Mono",monospace;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);padding-top:3px}
+.hl-dl dd{margin:0;font-size:14px;color:var(--soft);line-height:1.5}
+@media(max-width:560px){.hl-dl{grid-template-columns:1fr;gap:1px 0}.hl-dl dt{margin-top:7px}}
+.plotwrap{margin-top:26px;overflow-x:auto}
+.mini{margin:14px 0 0;overflow-x:auto}
+.mini svg{width:100%;min-width:560px;height:auto}
+.pt{fill:var(--dot)}
+.pt-lo{fill:var(--limit)}
+.rng{stroke:var(--bar);stroke-width:7;stroke-linecap:round}
+.lnk{stroke:var(--rule);stroke-width:1.5}
+.plab{fill:var(--soft);font-family:"JetBrains Mono",monospace;font-size:10.5px}
+.pval{fill:var(--ink);font-family:"JetBrains Mono",monospace;font-size:10.5px;font-weight:600}
+.ptitle{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.04em;text-transform:uppercase;
+  color:var(--soft);margin:22px 0 2px;font-weight:600}
+.blist{margin:12px 0 0;padding:0;list-style:none;max-width:78ch}
+.blist li{position:relative;padding-left:16px;margin:7px 0;color:var(--soft);font-size:13.5px;line-height:1.5}
+.blist li::before{content:"";position:absolute;left:0;top:.62em;width:6px;height:6px;border-radius:50%;
+  background:var(--rule)}
+.blist li b{color:var(--ink)}
+.intro{color:var(--soft);font-size:13.5px;max-width:78ch;margin:4px 0 14px}
+.litplot{width:100%;min-width:760px;height:auto}
+.cap{fill:var(--faint);font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:.08em}
+.srl{fill:var(--ink);font-family:"JetBrains Mono",monospace;font-size:12px;font-weight:600}
+.srl2{fill:var(--faint);font-family:"JetBrains Mono",monospace;font-size:10px}
+/* the scope tail of a cross row label. Two scopes of the same pair are DIFFERENT quantities and must never
+   read as one row drawn twice, so the scope is on the label itself, not only in the fold and the card. */
+.srlsc{fill:var(--faint);font-weight:400}
+.tick{stroke:var(--soft);stroke-width:2.6;stroke-linecap:round}
+.tick.t-lin{stroke:#3E58BC}.tick.t-cls{stroke:#846A0C}.tick.t-dl{stroke:#AE2F6E}
+.bestmark{fill:var(--faint)}
+.mk{cursor:pointer}.mk:focus{outline:2px solid var(--lead);outline-offset:2px}
+.lg-k{font-size:9.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--faint);margin-right:4px}
+.lg-o,.lg-t,.lg-c,.lg-f{display:inline-block;vertical-align:middle;margin:0 4px 0 10px}
+.lg-o{width:10px;height:10px;border-radius:50%;background:var(--dot)}
+.lg-t{width:3px;height:13px;background:var(--soft);border-radius:2px}
+.lg-c{width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;
+  border-bottom:6px solid var(--faint)}
+.lg-f{width:11px;height:11px;border-radius:3px}
+.f-lin{background:#3E58BC}.f-cls{background:#846A0C}.f-dl{background:#AE2F6E}
+.lg-row{display:block;margin-top:2px;color:var(--faint)}
+.mkdet{font-family:"JetBrains Mono",monospace;font-size:11.5px;color:var(--soft);margin:10px 0 0;
+  padding-top:8px;border-top:1px dashed var(--line);min-height:1.3em}
+.mkdet a{color:var(--lead)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .tick.t-lin{stroke:#5E74DC}
+  :root:not([data-theme="light"]) .tick.t-cls{stroke:#9E8320}
+  :root:not([data-theme="light"]) .tick.t-dl{stroke:#C75E92}
+  :root:not([data-theme="light"]) .f-lin{background:#5E74DC}
+  :root:not([data-theme="light"]) .f-cls{background:#9E8320}
+  :root:not([data-theme="light"]) .f-dl{background:#C75E92}}
+:root[data-theme="dark"] .tick.t-lin{stroke:#5E74DC}
+:root[data-theme="dark"] .tick.t-cls{stroke:#9E8320}
+:root[data-theme="dark"] .tick.t-dl{stroke:#C75E92}
+:root[data-theme="dark"] .f-lin{background:#5E74DC}
+:root[data-theme="dark"] .f-cls{background:#9E8320}
+:root[data-theme="dark"] .f-dl{background:#C75E92}
+@media(max-width:720px){.two{grid-template-columns:1fr}th,td{padding-right:8px}.bar{width:48px}}
+.shp{stroke:none}
+.shp.t-lin{fill:#3E58BC}.shp.t-cls{fill:#846A0C}.shp.t-dl{fill:#AE2F6E}.shp.t-none{fill:var(--soft)}
+.nbeat{fill:var(--ink);font-family:"JetBrains Mono",monospace;font-size:14px;font-weight:600;
+  font-variant-numeric:tabular-nums}
+.nbeat.nb-all{fill:var(--dot)}
+.nbeat.nb-all .nb-of{fill:var(--dot);font-weight:600}
+.nbeat.nb-none{fill:var(--limit)}
+.nbcap{fill:var(--faint);font-family:"JetBrains Mono",monospace;font-size:9.5px;letter-spacing:.06em}
+.parth{margin:36px 0 10px;font-family:"JetBrains Mono",monospace;font-size:12.5px;
+  letter-spacing:.06em;text-transform:uppercase;color:var(--ink);font-weight:500;
+  padding:7px 0 7px 12px;border-left:4px solid var(--dot);background:var(--panel);border-radius:0 5px 5px 0}
+.parth .sn{color:var(--faint);margin-right:10px;font-weight:400}
+.dsec{margin:22px 0 30px;padding-left:14px;border-left:2px solid var(--rule)}
+.dsec h4{margin:0 0 4px;font-size:15.5px;font-weight:600;letter-spacing:-.01em;padding-left:0}
+.dref{margin:0 0 3px;font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--faint);line-height:1.55}
+.dwhy{margin:0 0 12px;font-size:13.5px;color:var(--soft);line-height:1.6;max-width:66ch}
+.dnone{margin:0;font-size:13.5px;color:var(--faint);line-height:1.6;max-width:66ch;font-style:italic}
+.lgs{display:inline-block;vertical-align:middle;margin:0 4px 0 10px}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) .shp.t-lin{fill:#5E74DC}
+  :root:not([data-theme="light"]) .shp.t-cls{fill:#9E8320}
+  :root:not([data-theme="light"]) .shp.t-dl{fill:#C75E92}}
+:root[data-theme="dark"] .shp.t-lin{fill:#5E74DC}
+:root[data-theme="dark"] .shp.t-cls{fill:#9E8320}
+:root[data-theme="dark"] .shp.t-dl{fill:#C75E92}
+.sc-wrap{margin:6px 0 4px}
+.sc-bar{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;margin:0 0 8px}
+.sc-bar label{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--faint);
+  letter-spacing:.04em;text-transform:uppercase}
+.sc-bar select{font-family:"JetBrains Mono",monospace;font-size:12px;padding:3px 6px;
+  border:1px solid var(--line);border-radius:5px;background:var(--panel);color:var(--ink);max-width:260px}
+.sc-win{fill:var(--dot);opacity:.045}
+.sc-lose{fill:var(--limit);opacity:.045}
+.sc-diag{stroke:var(--soft);stroke-width:1.2;stroke-dasharray:5 4}
+.sc-zone{fill:var(--faint);font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:.07em}
+.sc-pt{cursor:pointer}
+.sc-ax{fill:var(--soft);font-family:"JetBrains Mono",monospace;font-size:11px}
+.sc-c0{fill:#2E7D6B}.sc-c1{fill:#B4531F}.sc-c2{fill:#3E58BC}.sc-c3{fill:#A03A6B}
+.sc-c4{fill:#7A6A18}.sc-c5{fill:#1F7FA8}.sc-c6{fill:#8B3A3A}.sc-c7{fill:#55407F}
+.sc-c8{fill:#3F7A22}.sc-c9{fill:#96601F}
+.sc-key{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center;margin:2px 0 12px;
+  padding:9px 12px;border:1px solid var(--line);border-radius:7px;background:var(--panel)}
+.sc-key .kh{font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--faint);width:100%;margin:0 0 2px}
+.sc-key .ki{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--ink)}
+.sc-key .kn{color:var(--faint);font-variant-numeric:tabular-nums;font-size:11px}
+.sc-tally{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--soft);margin:8px 0 0}
+.sc-tally b{color:var(--ink)}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) .sc-c0{fill:#4FA391}
+  :root:not([data-theme="light"]) .sc-c1{fill:#E0783F}
+  :root:not([data-theme="light"]) .sc-c2{fill:#6E84E4}
+  :root:not([data-theme="light"]) .sc-c3{fill:#D274A4}
+  :root:not([data-theme="light"]) .sc-c4{fill:#B7A43A}
+  :root:not([data-theme="light"]) .sc-c5{fill:#46A9D2}
+  :root:not([data-theme="light"]) .sc-c6{fill:#C46A6A}
+  :root:not([data-theme="light"]) .sc-c7{fill:#8B78BE}
+  :root:not([data-theme="light"]) .sc-c8{fill:#6FB04A}
+  :root:not([data-theme="light"]) .sc-c9{fill:#D0973F}}
+:root[data-theme="dark"] .sc-c0{fill:#4FA391}
+:root[data-theme="dark"] .sc-c1{fill:#E0783F}
+:root[data-theme="dark"] .sc-c2{fill:#6E84E4}
+:root[data-theme="dark"] .sc-c3{fill:#D274A4}
+:root[data-theme="dark"] .sc-c4{fill:#B7A43A}
+:root[data-theme="dark"] .sc-c5{fill:#46A9D2}
+:root[data-theme="dark"] .sc-c6{fill:#C46A6A}
+:root[data-theme="dark"] .sc-c7{fill:#8B78BE}
+:root[data-theme="dark"] .sc-c8{fill:#6FB04A}
+:root[data-theme="dark"] .sc-c9{fill:#D0973F}
+
+.hm-wrap{margin:14px 0 4px}
+.hm-cap{fill:var(--faint);font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:.07em}
+.hm-lab{fill:var(--soft);font-family:"JetBrains Mono",monospace;font-size:11px}
+.hm-cell{stroke:var(--bg);stroke-width:2}
+.hm-val{font-family:"JetBrains Mono",monospace;font-size:10.5px;font-variant-numeric:tabular-nums}
+.hm-na{fill:none;stroke:var(--line);stroke-width:1}
+.hm-nav{fill:var(--faint);font-family:"JetBrains Mono",monospace;font-size:10px}
+.hm-key{display:flex;align-items:center;gap:8px;margin:8px 0 0;font-family:"JetBrains Mono",monospace;
+  font-size:11px;color:var(--faint);flex-wrap:wrap}
+.hm-ramp{display:inline-block;height:11px;width:150px;border-radius:2px;
+  background:linear-gradient(90deg,#DCE9E6,#9CCCC2,#4FA391,#1F6F5E,#0E4438)}
+.nolit{margin:26px 0 10px;padding-left:14px;border-left:2px solid var(--rule)}
+.nolit h4{margin:0 0 4px;font-size:15.5px;font-weight:600;letter-spacing:-.01em;padding-left:0}
+.nolit .prob{margin:0 0 3px;font-size:13.5px;color:var(--ink);line-height:1.6;max-width:68ch}
+.nolit .mean{margin:0 0 4px;font-size:13.5px;color:var(--soft);line-height:1.6;max-width:68ch}
+.nolit .lit{margin:0 0 10px;font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--faint);
+  line-height:1.55;max-width:74ch}
+
+.sg{margin:20px 0 6px}
+.sg h4{margin:0 0 4px;font-size:15.5px;font-weight:600;letter-spacing:-.01em}
+.sg .lede{margin:0 0 10px;font-size:14px;color:var(--soft);line-height:1.62;max-width:70ch}
+.sg .lede b{color:var(--ink)}
+.sg-dot{fill:var(--dot)}
+.sg-dot.sg-drop{fill:var(--limit)}
+.sg-ax{fill:var(--soft);font-family:"JetBrains Mono",monospace;font-size:11px}
+.sg-t{fill:var(--faint);font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:.06em}
+.sg-med{stroke:var(--ink);stroke-width:2}
+.sg-note{font-family:"JetBrains Mono",monospace;font-size:11.5px;color:var(--soft);margin:8px 0 0;line-height:1.6}
+.sg-note b{color:var(--ink)}
+
+.nl-lab{fill:var(--ink);font-family:"JetBrains Mono",monospace;font-size:11.5px}
+.nl-track{stroke:var(--line);stroke-width:1}
+.nl-bar{stroke-width:5;stroke-linecap:round}
+.nl-num{fill:var(--ink);font-family:"JetBrains Mono",monospace;font-size:11.5px;font-variant-numeric:tabular-nums}
+.nl-dim{fill:var(--faint)}
+.sc-key .kn-all{color:var(--dot);font-weight:700}
+.sc-tally .tal{font-size:14px}
+.nbeat .nb-of{fill:var(--soft);font-weight:500;font-size:12.5px}
+.sub b{color:var(--ink);font-weight:600}
+.intro b{color:var(--ink);font-weight:600}
+.sc-pt .shp{stroke:var(--bg);stroke-width:1.6;paint-order:stroke fill}
+.sc-pt{fill-opacity:.92}
+.sc-pt:hover .shp{stroke:var(--ink);stroke-width:1.6}
+.dsec h4 .eb,.nolit h4 .eb{display:block;font-family:"JetBrains Mono",monospace;font-size:9.5px;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--faint);font-weight:400;margin-bottom:3px}
+
+</style>
+<style>
+body{padding:8px 12px 30px!important;margin:0;background:var(--bg)}
+.struct-toc,.watermark,.rosa-theme,.wmctl{display:none!important}
+#p3-gridtabs,.p3gthead,#p3-gridnote,#p3-tmwarn{display:none!important}
+body.only-closeup #s-explore,body.only-closeup #s-browser{display:none!important}
+body.only-track #s-explore,body.only-track #s-closeup{display:none!important}
+body.only-closeup #s-expr,body.only-track #s-expr{display:none!important}
+section{border-top:0!important;padding-top:4px!important}
+</style>
+<script>
+(function(){var h=(location.hash||'#PANC&closeup').slice(1).split('&');window.__VG=h[0];window.__VT=h[1]||'closeup';})();
+</script>
+</head><body>
+<div class="p3x" id="p3x">
+<div id="tip" role="tooltip"></div>
+<p class="p3gthead">Pick one of the <b>six transfer experiments</b> — the three tools below all
+show whichever one is selected.</p>
+<div class="p3gtabs" id="p3-gridtabs" role="tablist" aria-label="cross experiment"></div>
+<p class="note" id="p3-gridnote"></p>
+<p class="note warnbox" id="p3-tmwarn" hidden></p>
+
+<section id="s-explore">
+  <div class="eyebrow">3.1 &middot; the cross-study explorer</div>
+  <h3>The score as the model’s features are added one at a time.</h3>
+  <p class="sub">One trained dataset, one tested dataset. Each point adds the next strongest feature; the last
+  point is the score Part 1 reports for that pair.</p>
+  <div class="readme" data-edit-id="ex-howto" id="ex-howto"></div>
+  <div class="ctl">
+    <label for="ex-train">1 &middot; trained dataset</label>
+    <select id="ex-train"></select>
+    <label for="ex-test">2 &middot; tested dataset</label>
+    <select id="ex-test"></select>
+  </div>
+  <div class="ctl">
+    <label for="ex-fam">3 &middot; &ldquo;common&rdquo; means</label>
+    <select id="ex-fam">
+      <option value="all">no restriction &mdash; use the whole model</option>
+      <option value="present">B &mdash; the sequence APPEARS in the grid's datasets</option>
+      <option value="picked">A &mdash; the sequence was PICKED by the grid's models</option>
+      <option value="test">C &mdash; the sequence APPEARS in the tested dataset</option>
+      <option value="other">D &mdash; the sequence APPEARS in the other chemistry</option>
+    </select>
+    <span id="ex-k-wrap"><label for="ex-k">4 &middot; in at least</label>
+    <select id="ex-k"></select></span>
+    <button class="tab" id="ex-cmp" aria-pressed="true"
+      title="Draw the whole model and every cut-off on one chart">show all cut-offs together</button>
+  </div>
+  <div class="ctl">
+    <label for="ex-cls">score</label>
+    <select id="ex-cls"></select>
+  </div>
+  <div class="summary" id="ex-sum"></div>
+  <div id="ex-chart"></div>
+  <div class="legend" id="ex-leg"></div>
+  <div class="note" data-edit-id="ex-note" id="ex-note"></div>
+  <div style="margin-top:22px">
+    <div class="eyebrow">3.1b &middot; the same model, on every dataset it was tested on</div>
+    <p class="sub">The model from “trained dataset” on every dataset it was tested on, with the same settings. Your selected tested dataset is highlighted.</p>
+    <div id="ex-fan"></div>
+  </div>
+</section>
+
+<section id="s-closeup">
+  <div class="eyebrow">3.2 &middot; gene close-up</div>
+  <h3>The chosen sequences grouped by the gene they align to, and how much of the score each gene carries.</h3>
+  <p class="sub">Tick a gene and every feature named after it is added; the curve is recomputed on the other
+  dataset as you tick.</p>
+  <div class="readme" data-edit-id="gc-howto" id="gc-howto"></div>
+  <div class="ctl">
+    <label for="gc-train">1 &middot; trained dataset</label><select id="gc-train"></select>
+    <label for="gc-test">2 &middot; tested dataset</label><select id="gc-test"></select>
+  </div>
+  <div class="ctl">
+    <label for="gc-cls">score</label><select id="gc-cls"></select>
+  </div>
+  <div class="ctl">
+    <label for="gc-sort">sort the list by</label>
+    <select id="gc-sort">
+      <option value="w">weight &mdash; the order the curve uses</option>
+      <option value="fired">features firing in the tested dataset</option>
+      <option value="nfeat">features in the model</option>
+      <option value="name">gene name</option>
+    </select>
+    <button class="tab" id="gc-hidedead" aria-pressed="false">hide genes that never fire</button>
+  </div>
+  <div class="ctl">
+    <label>check</label>
+    <button class="tab" id="gc-top10">top 10</button>
+    <button class="tab" id="gc-top20">top 20</button>
+    <button class="tab" id="gc-all">all</button>
+    <button class="tab" id="gc-none">none</button>
+    <button class="tab" id="gc-mk">markers</button>
+    <span class="mkwhy" id="gc-mk-why"></span>
+  </div>
+  <div class="summary" id="gc-sum"></div>
+  <div class="closeup">
+    <div><div class="genelist" id="gc-list"></div></div>
+    <div><div id="gc-chart"></div><div class="legend" id="gc-leg"></div></div>
+  </div>
+  <div class="note" data-edit-id="gc-note" id="gc-note"></div>
+  <div class="note warnbox" data-edit-id="gc-caveat" id="gc-caveat"></div>
+  <p class="note" id="gc-mksrc"></p>
+</section>
+
+<section id="s-browser">
+  <div class="eyebrow"><span class="updlab" data-updated="2026-10-26T20:17:00">updated 2026-10-26 20:17 PST</span>3.3 &middot; where the sequences sit inside the gene</div>
+  <h3>The position of each chosen sequence inside its gene.</h3>
+  <p class="sub">Exon blocks and the intron line of one transcript; one mark per 39-base sequence, and a mark
+  below the line wherever it does not match the genome exactly.</p>
+  <div class="readme" data-edit-id="br-howto" id="br-howto"></div>
+  <div class="ctl">
+    <label for="br-donor">1 &middot; trained dataset</label><select id="br-donor"></select>
+    <label for="br-sort" style="margin-left:12px">order genes by</label>
+    <select id="br-sort">
+      <option value="w">weight</option>
+      <option value="n">number of sequences</option>
+      <option value="ex">share inside an exon</option>
+      <option value="name">gene name</option>
+    </select>
+    <button class="tab" id="br-mk" aria-pressed="false">marker genes only</button>
+    <span class="mkwhy" id="br-mk-why"></span>
+  </div>
+  <div class="summary" id="br-sum"></div>
+  <!-- 2026-09-23: the sequences with no genome coordinate. They have no mark on any track, so no
+       click can reach them; on the mouse grids they are most of the model. This is their only place. -->
+  <div class="unpl" id="br-unpl"></div>
+  <div class="closeup">
+    <div><div class="genelist" id="br-list"></div></div>
+    <div>
+      <div id="br-tracks"></div>
+      <div class="brseq" id="br-seq" hidden></div>
+      <div class="legend" id="br-leg"></div>
+    </div>
+  </div>
+  <div class="note" data-edit-id="br-note" id="br-note"></div>
+  <div class="note" data-edit-id="br-gnly-junction" id="br-gnly-junction"><b>GNLY in the uterus (Fig 7): the marks below the line at the exon 3 and exon 4 edges are exon junction reads.</b> Two of the 84 GNLY sequences cross the exon 3 to exon 4 junction (chr2:85,696,056 to 85,697,506): one has 33 bases of exon 3 and 6 of exon 4, the other 3 bases of exon 3 and 36 of exon 4. This is the normal (canonical) junction of the main transcript GNLY-201 (MANE Select), also used by 3 other protein-coding isoforms (GNLY-211, -224, -226); it is not alternative or new splicing. The sequences fall below the line only because the aligner soft-clips the few bases across the junction. The other imperfect GNLY sequences carry the known SNPs rs11127 and rs12845.</div>
+  <div style="margin-top:24px">
+    <div class="eyebrow">3.3b &middot; the exon share, by gene length</div>
+    <p class="sub">All models of one species pooled, against the exon share of the loci themselves.</p>
+    <div class="scroll"><table id="br-bins"></table></div>
+    <div class="note" data-edit-id="br-bins-note" id="br-bins-note"></div>
+  </div>
+  <div class="note warnbox" data-edit-id="br-caveat" id="br-caveat"></div>
+  <p class="note" id="br-mksrc"></p>
+</section>
+
+
+<section id="s-expr">
+  <div class="eyebrow"><span class="updlab" data-updated="2026-10-26T19:12:00">updated 2026-10-26 19:12 PST</span>3.4 &middot; selected genes vs gene expression</div>
+  <h3>Uterus NK cells: the model's most important genes are not simply the most expressed genes.</h3>
+  <p class="sub">Human uterus atlas, natural killer (NK) cells against the other 29 cell types. Each dot is one gene the model chose sequences on.</p>
+  <div class="note" id="ex-sum" style="font-size:15px;color:var(--ink)"><b>Spearman -0.026</b> between gene importance and gene expression (317 weighted genes): importance does not follow expression.
+  The weighted genes are well expressed (median percentile 98.93; 83% of the importance is on the top 5% most expressed genes), but among them the order is unrelated to expression.
+  GNLY, a cytotoxic NK gene, makes up most of the importance (also Fig 7, section 3.3).</div>
+  <div id="ex-plot" style="margin-top:14px"></div>
+  <p class="note" data-edit-id="ex-basis"><b>How it is counted.</b> Model: hca-uterus-mc5, all sequences, one model over 30 uterus cell types (macro AUC 0.906); P2G run of Sept 2026, before v0.12.
+  Importance of a gene = |sum over its selected sequences of f &times; NK coefficient|; colour = sign (higher or lower score for NK than for the other cell types, which is not the same as higher expression in NK).
+  206 genes score higher for NK and 170 lower; 838 grey genes are chosen only through an anchor-present term, which has no gene, so importance 0.
+  Expression: the authors' CELLxGENE counts (PremenopausalUterusDynamics, five healthy donors), counts per 10,000 per cell, mean over the same 40,436 cells (1,041 NK, 39,395 other); rank among 31,450 expressed genes. 59 weighted genes are not in the authors' matrix (mostly pseudogenes and mitochondrial rRNA) and are not shown.</p>
+</section>
+<script>
+(function(){
+const G=[["GNLY",21.4451,2.93427,1,86,99.73,84,721.27,2.953],["C1QB",0.6602,0.67105,-1,2022,93.57,17,0.024,0.677],["SLC3A2",1.4907,0.41662,-1,830,97.36,3,0.934,1.505],["CCL3L3",1.8292,0.29162,1,655,97.92,34,0.389,1.867],["WFDC2",4.6687,0.27816,-1,261,99.17,66,0.126,4.789],["CCL3",2.0392,0.2603,1,583,98.15,36,8.733,1.862],["PAEP",10.7339,0.25953,-1,139,99.56,68,0.24,11.011],["NKG7",1.8509,0.25797,1,649,97.94,15,55.821,0.425],["MT-ND2",34.7857,0.25766,-1,29,99.91,34,28.737,34.945],["S100A9",1.1052,0.23083,1,1152,96.34,28,0.128,1.131],["CCL21",1.7159,0.21819,-1,709,97.75,42,0.016,1.761],["ARC",0.1694,0.20953,-1,6973,77.83,1,0.013,0.173],["HLA-DRB1",5.5199,0.20606,1,224,99.29,45,0.231,5.66],["IGFBP7",31.9974,0.1688,-1,39,99.88,34,4.832,32.715],["CCL4L2",1.35,0.15693,1,928,97.05,24,1.588,1.344],["RPL28",23.8163,0.15414,-1,66,99.79,23,27.788,23.711],["HSP90AA1",38.5028,0.14941,1,26,99.92,42,26.298,38.825],["JUN",32.7188,0.14399,-1,35,99.89,47,8.798,33.351],["CD74",7.2838,0.1383,-1,187,99.41,45,0.814,7.455],["CALM1",7.7476,0.12816,1,174,99.45,13,9.053,7.713],["CCL4",3.1237,0.11857,1,362,98.85,16,36.108,2.252],["HSP90AB1",16.3851,0.1155,-1,109,99.66,31,8.684,16.589],["CLDN4",0.9579,0.10558,1,1366,95.66,13,0.025,0.983],["RPS8",40.9774,0.10257,-1,23,99.93,23,22.627,41.462],["CAPS",1.5033,0.10155,1,820,97.4,49,0.093,1.54],["RPL19",27.673,0.09911,1,53,99.83,42,21.19,27.844],["SLPI",2.3177,0.09894,-1,505,98.4,19,0.109,2.376],["GADD45B",19.9776,0.09789,1,98,99.69,18,1.677,20.461],["ADIRF-AS1",0.033,0.0975,-1,12898,58.99,13,0.007,0.034],["MT-CO1",99.6313,0.09583,-1,3,99.99,28,150.372,98.29],["TPM2",25.7244,0.08937,1,58,99.82,41,0.072,26.402],["ARHGDIB",0.9019,0.08569,-1,1454,95.38,1,6.597,0.751],["ACKR1",2.73,0.08417,-1,416,98.68,35,0.013,2.802],["B2M",41.3454,0.08409,1,21,99.94,23,109.263,39.551],["S100A6",26.8232,0.08073,1,56,99.83,38,6.88,27.35],["CCSER1",0.0678,0.07534,1,10704,65.97,6,0.0,0.07],["VWA3A",0.0253,0.07367,-1,13577,56.83,1,0.002,0.026],["GARIN5A",0.0117,0.07263,-1,15526,50.64,1,0.001,0.012],["ATP8B4",0.0891,0.07263,-1,9696,69.17,1,1.448,0.053],["MYL9",23.9157,0.07196,-1,64,99.8,22,0.065,24.546],["SYCP1",0.0001,0.06821,-1,28955,7.94,1,0.0,0.0],["HLA-C",8.2033,0.06641,1,163,99.48,33,25.578,7.744],["HLA-A",10.2909,0.06609,1,143,99.55,76,38.809,9.537],["IFITM2",5.5161,0.06518,-1,225,99.29,22,9.36,5.415],["CALD1",13.8301,0.0636,-1,122,99.62,26,0.068,14.194],["TM4SF1-AS1",0.0176,0.06282,1,14538,53.78,34,0.0,0.018],["ACTA2-AS1",0.0165,0.0622,1,14707,53.24,26,0.0,0.017],["GAPDH",11.5355,0.06087,-1,135,99.57,24,17.826,11.369],["PTMA",39.2195,0.0567,1,25,99.92,28,31.925,39.412],["LGALS1",14.2559,0.05444,-1,117,99.63,27,9.078,14.393],["SH3BGRL3",3.4325,0.05331,1,339,98.93,23,14.797,3.132],["RPS6",25.6272,0.05314,1,59,99.82,29,17.453,25.843],["APOE",2.0637,0.05152,1,578,98.17,40,0.07,2.116],["TYROBP",1.3587,0.05021,1,924,97.07,6,15.834,0.976],["IGHGP",0.0087,0.04873,-1,16214,48.45,3,0.0,0.009],["TPSAB1",0.8662,0.04836,1,1511,95.2,17,0.061,0.887],["DCN",5.7028,0.04752,-1,220,99.3,24,0.084,5.851],["SAT1",8.8727,0.04636,-1,152,99.52,28,3.904,9.004],["TAGLN",62.8611,0.04453,1,11,99.97,51,0.164,64.517],["HSPA1B",23.8115,0.04398,1,67,99.79,22,4.189,24.33],["SCGB1D2",2.4762,0.04396,1,458,98.55,28,0.031,2.541],["TXNIP",7.0152,0.04306,-1,191,99.4,15,14.358,6.821],["SPARCL1",25.5884,0.04254,-1,60,99.81,16,0.083,26.262],["HLA-DRA",4.8904,0.04125,-1,253,99.2,20,0.255,5.013],["SERPING1",2.8152,0.03796,1,401,98.73,6,0.039,2.889],["UBC",19.5176,0.03725,1,101,99.68,24,12.925,19.692],["CDH13",0.356,0.03656,1,3891,87.63,2,0.008,0.365],["GSTP1",7.3165,0.0329,1,186,99.41,42,8.955,7.273],["JUNB",30.9898,0.03276,-1,42,99.87,14,9.234,31.565],["FTL",24.5175,0.03156,-1,63,99.8,35,7.253,24.974],["NVL",0.1063,0.03105,1,8976,71.46,1,0.137,0.105],["ZNF827",0.1671,0.0296,1,7032,77.64,1,0.402,0.161],["RPL4",6.7925,0.02771,1,197,99.38,17,4.491,6.853],["FXYD5",1.0157,0.02649,1,1272,95.96,4,2.481,0.977],["CST3",8.3235,0.02618,-1,161,99.49,34,0.497,8.53],["FBN3",0.0011,0.02612,1,21927,30.28,1,0.0,0.001],["PRKG1-AS1",0.0055,0.02612,1,17429,44.59,1,0.0,0.006],["RPLP2",17.7574,0.02583,1,104,99.67,32,21.246,17.665],["SLC2A3",2.1353,0.02582,-1,557,98.23,3,3.33,2.104],["GZMB",2.8956,0.02575,1,392,98.76,22,97.175,0.404],["MT-CYB",86.0747,0.02553,-1,5,99.99,18,59.988,86.765],["RPL5",21.9647,0.0254,1,82,99.74,18,10.136,22.277],["CBX5",0.5282,0.02376,1,2598,91.74,1,0.513,0.529],["ATP5F1E",8.1822,0.02278,1,164,99.48,9,13.926,8.03],["TPSB2",1.5294,0.022,-1,804,97.45,14,0.131,1.566],["NPDC1",1.6917,0.02192,1,724,97.7,3,0.019,1.736],["EPHA6",0.0073,0.02182,1,16726,46.82,1,0.0,0.007],["RPS15",21.8629,0.02158,-1,83,99.74,8,19.455,21.927],["NUCKS1",3.4881,0.02132,1,332,98.95,2,1.921,3.53],["CRYAB",7.6585,0.02126,1,178,99.44,22,0.035,7.86],["NFIC",1.5455,0.02112,1,793,97.48,1,0.209,1.581],["RPLP0",11.6467,0.02095,-1,134,99.58,15,6.935,11.771],["APOD",1.7325,0.02081,-1,704,97.76,12,0.014,1.778],["HLA-B",11.9242,0.02028,1,131,99.59,93,30.806,11.425],["MEMO1",0.0567,0.02021,1,11315,64.03,1,0.068,0.056],["ATP5MC2",4.5233,0.02015,1,267,99.15,11,3.589,4.548],["GSN",5.9226,0.02012,1,217,99.31,23,0.841,6.057],["MPND",0.0782,0.0194,1,10206,67.55,1,0.166,0.076],["CLDN3",0.9322,0.01924,1,1408,95.53,15,0.009,0.957],["PCCA",0.2298,0.01904,1,5629,82.1,1,0.131,0.233],["KRT10",1.3468,0.01868,1,930,97.05,1,1.057,1.355],["CXCL3",0.6449,0.01865,1,2066,93.43,4,0.156,0.658],["PRKCA-AS1",0.0137,0.01859,1,15125,51.91,1,0.0,0.014],["CASS4",0.016,0.01859,1,14768,53.05,1,0.125,0.013],["L2HGDH",0.0354,0.01859,1,12705,59.61,1,0.033,0.035],["IFITM1",0.938,0.01852,-1,1398,95.56,15,2.29,0.902],["ADAMTS4",0.7558,0.01833,-1,1746,94.45,2,0.021,0.775],["SPATA21",0.0045,0.01828,1,17941,42.96,1,0.001,0.005],["NR4A1AS",0.0847,0.01825,-1,9884,68.58,17,0.017,0.086],["AXDND1",0.0036,0.0173,1,18549,41.02,1,0.003,0.004],["TRIM16",0.076,0.01715,1,10308,67.23,1,0.022,0.077],["SPARC",3.7525,0.01706,1,308,99.02,5,0.032,3.851],["COX4I1",5.0146,0.01703,1,246,99.22,18,4.826,5.019],["SPON1-AS1",0.0012,0.01571,1,21643,31.19,1,0.0,0.001],["ACTG2",4.188,0.0146,1,283,99.1,18,0.016,4.298],["C3",0.3578,0.01424,1,3869,87.7,1,0.035,0.366],["WDR38",0.0555,0.01406,-1,11389,63.79,14,0.0,0.057],["CRIP1",13.8837,0.01395,1,121,99.62,20,9.41,14.002],["RPL13",46.0627,0.01395,1,16,99.95,41,35.923,46.331],["RPL36",19.4806,0.01366,-1,102,99.68,19,13.838,19.63],["ID2",2.5635,0.01364,-1,442,98.6,2,16.233,2.202],["EIF1",20.2038,0.01358,-1,92,99.71,15,15.572,20.326],["ACTG1",16.5193,0.01337,-1,108,99.66,16,14.528,16.572],["APAF1",0.1027,0.01337,1,9107,71.05,1,0.201,0.1],["SSR4",3.1623,0.01299,1,357,98.87,6,4.507,3.127],["PTGDS",1.4131,0.01274,-1,880,97.21,13,0.025,1.45],["DNAJA1",8.1228,0.01242,-1,166,99.48,17,3.981,8.232],["DIS3L-AS1",0.0013,0.01234,1,21341,32.15,1,0.0,0.001],["RACK1",14.1599,0.01214,1,119,99.62,23,8.901,14.299],["C1QA",0.7636,0.0121,1,1723,94.52,22,0.033,0.783],["S100A11",8.0669,0.012,-1,168,99.47,34,5.104,8.145],["MYL6",23.1807,0.01186,-1,71,99.78,30,12.627,23.46],["RPS11",14.1656,0.01159,1,118,99.63,16,11.517,14.236],["CCN1",2.9907,0.01075,-1,380,98.79,6,0.033,3.069],["CALR",2.6799,0.00959,1,426,98.65,4,3.243,2.665],["MDK",2.2755,0.00946,-1,519,98.35,20,0.021,2.335],["MYG1-AS1",0.0107,0.00945,-1,15746,49.94,13,0.004,0.011],["SELENOW",5.385,0.00932,1,230,99.27,10,1.603,5.485],["CFL1",6.8087,0.00881,1,196,99.38,10,11.451,6.686],["CIMIP1",0.5138,0.00869,-1,2677,91.49,11,0.0,0.527],["EIF4A1",5.2907,0.00852,-1,233,99.26,9,4.362,5.315],["ARL14EPL",0.0024,0.00847,1,19715,37.32,14,0.006,0.002],["C11orf96",44.6317,0.00821,1,18,99.95,10,0.141,45.807],["SSX2IP",0.0647,0.00819,1,10882,65.4,1,0.047,0.065],["SNHG29",5.8932,0.00818,1,219,99.31,23,2.421,5.985],["GNG11",3.2654,0.00797,-1,354,98.88,5,0.017,3.351],["NFKBIA",6.1637,0.00781,1,213,99.33,44,8.451,6.103],["RNASE1",1.8221,0.0078,1,659,97.91,23,0.042,1.869],["RFLNA",0.0084,0.00752,1,16311,48.14,1,0.0,0.009],["FAM153CP",0.0418,0.00737,-1,12252,61.05,12,0.022,0.042],["AQP1",2.0941,0.00735,1,566,98.2,16,0.002,2.149],["TMSB10",22.3414,0.00717,-1,76,99.76,45,22.144,22.347],["RPL29",20.1609,0.00687,1,93,99.71,47,14.636,20.307],["MT-CO3",93.1722,0.00685,1,4,99.99,30,103.509,92.899],["TPT1",43.3623,0.0066,-1,19,99.94,47,56.932,43.004],["APOC1",0.4192,0.00641,1,3313,89.47,5,0.004,0.43],["CEBPD",12.5036,0.0063,1,130,99.59,13,4.757,12.708],["MT-ND4",64.7375,0.00629,1,10,99.97,22,56.628,64.952],["FHL2",0.5801,0.00629,1,2351,92.53,9,0.009,0.595],["CEBPB",4.0832,0.00617,1,287,99.09,1,2.999,4.112],["TUBB4B",2.7412,0.00592,-1,412,98.69,17,1.526,2.773],["TSPO",2.433,0.00564,1,468,98.52,5,0.97,2.472],["HLA-E",7.2698,0.00563,1,188,99.41,22,11.14,7.168],["DDT",1.6827,0.00553,1,728,97.69,2,1.244,1.694],["SNX22",0.0029,0.00538,1,19128,39.18,27,0.009,0.003],["HMGB1",8.7941,0.00525,-1,153,99.52,2,9.812,8.767],["MT1A",2.6854,0.00519,-1,425,98.65,8,0.006,2.756],["LUM",2.434,0.00501,-1,466,98.52,8,0.126,2.495],["IFI27",5.044,0.00493,1,245,99.22,30,0.029,5.177],["CD81",8.6489,0.00481,1,157,99.5,30,3.867,8.775],["RPL32",34.4562,0.00479,1,30,99.91,15,23.882,34.736],["RGS5",1.817,0.00477,-1,661,97.9,1,0.005,1.865],["CALM2",7.5396,0.00475,1,180,99.43,6,3.561,7.645],["RPL35A",23.0927,0.00472,1,73,99.77,15,17.008,23.253],["C19orf53",1.8717,0.00466,1,636,97.98,2,1.519,1.881],["HSPH1",5.3355,0.00457,-1,231,99.27,6,2.779,5.403],["LINC01411",0.0028,0.00439,1,19211,38.92,1,0.0,0.003],["RFC2",0.1717,0.00418,-1,6923,77.99,1,0.208,0.171],["RPS16",19.0421,0.00397,-1,103,99.68,22,12.666,19.211],["TTC3",1.3526,0.00383,-1,926,97.06,1,0.814,1.367],["GUK1",3.3628,0.00381,-1,343,98.91,6,2.619,3.382],["FAU",22.0507,0.00379,1,81,99.75,16,16.69,22.192],["NACA",16.1125,0.00378,-1,110,99.65,9,10.28,16.267],["ARMC9",0.0953,0.00374,-1,9390,70.15,3,0.021,0.097],["ARID5A",1.2104,0.00373,-1,1043,96.69,4,1.088,1.214],["OAZ1",4.9433,0.0037,1,251,99.21,3,5.78,4.921],["RPLP1",60.0333,0.0037,-1,12,99.97,28,56.626,60.123],["GADD45G",2.9966,0.00368,-1,379,98.8,6,0.257,3.069],["GNAL",0.1407,0.00356,-1,7790,75.23,2,0.011,0.144],["ENY2",1.563,0.00347,-1,785,97.51,1,1.5,1.565],["DTNBP1",0.2469,0.00343,1,5323,83.08,1,0.236,0.247],["CNN1",4.0086,0.00341,-1,292,99.07,12,0.021,4.114],["LSM7",1.3239,0.0034,1,952,96.98,2,1.4,1.322],["DES",1.8243,0.00329,-1,658,97.91,35,0.018,1.872],["CLDN5",1.3422,0.00317,-1,936,97.03,10,0.002,1.378],["RPL14",20.7923,0.00315,1,88,99.72,12,13.768,20.978],["HLA-DPB1",1.9382,0.00312,1,612,98.06,17,0.269,1.982],["S100A10",4.7229,0.00311,1,260,99.18,42,3.67,4.751],["ATXN2",0.4737,0.00301,1,2925,90.7,1,0.31,0.478],["ODAD3",0.0472,0.003,1,11902,62.16,1,0.002,0.048],["PCOLCE",0.9812,0.00295,1,1319,95.81,2,0.052,1.006],["CIB1",1.2716,0.00293,1,992,96.85,5,2.152,1.248],["CSRP1",6.7729,0.0028,1,198,99.37,16,0.293,6.944],["RPL37A",29.2948,0.00277,1,46,99.86,16,22.924,29.463],["H3-3B",19.6049,0.00274,-1,100,99.69,31,20.213,19.589],["MMRN2",0.3954,0.0027,1,3523,88.8,4,0.0,0.406],["IL6",0.6666,0.00266,-1,1998,93.65,4,0.009,0.684],["DSTN",21.6808,0.00266,-1,85,99.73,13,0.721,22.235],["NEAT1",16.7184,0.00256,1,107,99.66,22,14.11,16.788],["RPL27A",16.782,0.00256,-1,106,99.67,10,15.574,16.814],["CDKN1A",5.6188,0.00247,-1,221,99.3,15,0.315,5.759],["SERPINF1",1.5415,0.00247,1,796,97.47,14,0.015,1.582],["JUND",16.0651,0.00239,1,111,99.65,12,16.098,16.064],["LMNA",7.357,0.00223,1,184,99.42,28,0.646,7.534],["RAMP2",1.5525,0.00222,1,790,97.49,9,0.005,1.593],["HLA-DQB1",0.8224,0.00222,1,1585,94.96,2,0.079,0.842],["CXCL14",3.3094,0.00219,-1,349,98.89,21,0.06,3.395],["CIRBP",4.6591,0.00218,1,262,99.17,10,2.514,4.716],["SERPINH1",2.0913,0.00218,1,568,98.2,5,0.228,2.14],["MALAT1",424.9291,0.00214,-1,1,100.0,167,535.665,422.003],["RAMP1",2.9279,0.00212,-1,388,98.77,14,0.947,2.98],["CMSS1",0.3947,0.00201,-1,3529,88.78,1,0.198,0.4],["SLC35F2",0.0841,0.00198,1,9927,68.44,20,0.045,0.085],["RAD51B",0.1556,0.00195,-1,7356,76.61,1,0.052,0.158],["CTSD",1.7981,0.00189,1,672,97.87,7,5.913,1.689],["PLCB4",0.4593,0.00187,-1,3010,90.43,1,0.017,0.471],["RPL22",13.5667,0.00184,-1,123,99.61,4,9.156,13.683],["TANC1",0.4221,0.00178,-1,3288,89.55,1,0.015,0.433],["SQSTM1",3.3378,0.00178,-1,345,98.91,12,1.491,3.387],["MMP11",0.9186,0.00178,-1,1422,95.48,7,0.023,0.942],["TCIM",1.1411,0.00176,-1,1116,96.45,1,0.044,1.17],["RPL6",19.8731,0.00171,1,99,99.69,6,14.344,20.019],["CAPNS1",1.2294,0.00167,-1,1024,96.75,1,0.969,1.236],["RPS3",25.3822,0.00163,-1,61,99.81,22,22.143,25.468],["TAGLN2",3.33,0.00162,-1,346,98.9,10,5.716,3.267],["PIGU",0.0841,0.00161,1,9928,68.44,1,0.078,0.084],["BEST1",0.0242,0.0016,1,13684,56.49,9,0.006,0.025],["RPS19",28.5302,0.00159,-1,49,99.85,21,80.964,27.145],["CCL2",7.7721,0.00156,1,173,99.45,11,0.041,7.976],["CADPS",0.0217,0.00154,1,13968,55.59,1,0.0,0.022],["DGKI",0.0102,0.00149,1,15829,49.67,6,0.0,0.011],["CCDC107",1.6978,0.00148,-1,719,97.72,2,0.76,1.722],["RPS27",42.5916,0.00147,-1,20,99.94,5,51.007,42.369],["RASAL2",0.7685,0.00146,1,1706,94.58,1,0.006,0.789],["AGR3",0.3339,0.00142,-1,4126,86.88,7,0.004,0.343],["RPS24",29.8847,0.00139,1,44,99.86,19,26.18,29.983],["RPL11",29.8923,0.00138,-1,43,99.87,22,23.145,30.071],["CTSA",0.5253,0.00134,-1,2617,91.68,4,0.81,0.518],["PDLIM1",2.4579,0.00129,1,462,98.53,13,0.115,2.52],["HSPB1",22.092,0.00123,-1,80,99.75,27,0.91,22.652],["ATF3",9.8423,0.00122,1,146,99.54,23,0.626,10.086],["UBA52",11.4419,0.00122,-1,136,99.57,15,11.526,11.44],["PPP1R15A",5.1061,0.0012,1,242,99.23,24,2.828,5.166],["S100A4",9.146,0.00119,1,150,99.53,9,9.314,9.142],["DUSP1",8.7553,0.00117,1,154,99.51,13,6.385,8.818],["FOXK1",0.2039,0.00114,1,6155,80.43,1,0.143,0.205],["RBP1",1.6487,0.00107,-1,741,97.65,17,0.047,1.691],["UBB",10.497,0.00106,1,141,99.55,15,8.218,10.557],["TUBA1B",4.4079,0.00105,-1,271,99.14,20,1.777,4.477],["CLU",8.0805,0.00099,1,167,99.47,12,0.215,8.288],["RNASEK",3.4565,0.00097,1,336,98.93,9,3.511,3.455],["IGFBP4",4.4784,0.00095,1,269,99.15,12,0.081,4.595],["RPS15A",22.2036,0.00095,1,79,99.75,6,25.188,22.125],["PFN1",6.6897,0.00093,1,204,99.35,14,16.107,6.441],["GZMA",2.0255,0.00091,1,588,98.13,8,63.898,0.391],["PTMS",5.4357,0.00091,-1,226,99.28,7,0.377,5.569],["VIM",57.8768,0.0009,1,13,99.96,28,7.623,59.205],["RPL24",20.0015,0.00088,1,97,99.69,4,12.224,20.207],["PPA2",0.3649,0.00085,1,3800,87.92,1,0.18,0.37],["RPS21",20.0122,0.00084,1,96,99.7,14,16.029,20.117],["WDR83",0.1191,0.00076,1,8485,73.02,2,0.109,0.119],["RPS14",32.0271,0.00071,1,38,99.88,22,23.85,32.243],["ZNF90",0.0356,0.00071,-1,12693,59.64,5,0.011,0.036],["COL1A2",3.7278,0.00069,1,310,99.02,2,0.074,3.824],["ZNF428",0.84,0.00068,1,1549,95.08,1,0.56,0.847],["TUBA1A",4.7418,0.00066,-1,257,99.19,7,1.348,4.832],["BCL2L2",0.1285,0.00066,-1,8167,74.03,1,0.051,0.131],["NDUFB2",2.2948,0.00063,1,514,98.37,3,2.357,2.293],["ZFP36",22.4284,0.00061,-1,75,99.76,15,14.267,22.644],["IFI30",0.7965,0.00061,1,1644,94.78,14,0.059,0.816],["GPX3",2.006,0.00061,-1,593,98.12,3,0.056,2.058],["HLA-DRB5",0.4105,0.00057,1,3392,89.22,8,0.01,0.421],["MT2A",15.7088,0.00057,-1,113,99.64,15,1.681,16.079],["RPL10A",20.0629,0.00055,-1,95,99.7,12,12.625,20.26],["CCN2",3.3548,0.00054,-1,344,98.91,7,0.037,3.442],["IGKC",5.0666,0.00053,1,244,99.23,19,1.744,5.154],["SDCBP2-AS1",0.0279,0.00052,1,13328,57.62,2,0.024,0.028],["RPL18",22.6453,0.00049,-1,74,99.77,15,15.287,22.84],["ID3",4.786,0.00047,1,255,99.19,18,1.163,4.882],["TSC22D3",3.0443,0.00045,1,373,98.82,8,15.502,2.715],["SOX4",2.7524,0.00044,-1,410,98.7,5,0.853,2.803],["SERF2",10.2042,0.0004,-1,144,99.55,15,11.505,10.17],["EGR1",8.174,0.00039,1,165,99.48,19,0.396,8.38],["NDUFS5",3.8358,0.00037,-1,302,99.04,8,3.09,3.856],["CD63",10.0107,0.00036,-1,145,99.54,28,12.009,9.958],["DUSP2",1.0542,0.00035,-1,1214,96.14,11,9.597,0.829],["RPS2",28.5561,0.00034,1,48,99.85,8,22.317,28.721],["IGFBP5",7.7015,0.00033,1,176,99.44,5,0.032,7.904],["H2AZ1",2.8585,0.00032,-1,397,98.74,5,1.978,2.882],["HSPA6",6.4579,0.00032,-1,209,99.34,16,1.862,6.579],["RPS9",20.1593,0.00031,1,94,99.7,32,13.655,20.331],["RPL27",11.7399,0.00029,1,133,99.58,9,12.317,11.725],["RPS13",22.2456,0.00021,-1,78,99.76,9,12.606,22.5],["DNAJB1",13.3748,0.00017,1,124,99.61,35,5.235,13.59],["RBFOX2",0.8986,0.00015,-1,1457,95.37,2,0.036,0.921],["TIMP3",7.4588,0.00014,-1,182,99.42,15,0.051,7.654],["GAS5",3.8561,0.00014,-1,301,99.05,3,2.41,3.894],["RPL26",28.4782,0.00013,-1,50,99.84,15,23.462,28.611],["ENSA",1.1617,0.00013,-1,1095,96.52,1,1.421,1.155],["MEDAG",0.1695,0.00012,-1,6970,77.84,1,0.004,0.174],["EGFL7",1.3334,0.00011,-1,942,97.01,6,0.005,1.369],["COX7C",6.7364,9e-05,1,201,99.36,6,5.608,6.766],["AREG",1.7092,8e-05,1,712,97.74,4,31.125,0.932],["MT1X",4.2468,8e-05,-1,281,99.11,13,0.355,4.35],["MIF",7.0704,7e-05,1,189,99.4,21,8.121,7.043],["CCL14",5.2001,6e-05,-1,235,99.26,16,0.027,5.337],["HSPA1A",69.1257,3e-05,1,8,99.98,24,15.237,70.55],["ELF2",0.7583,0.0,0,1741,94.47,2,0.506,0.765],["TXN",4.8929,0.0,0,252,99.2,14,1.463,4.984],["SPP1",1.0629,0.0,0,1206,96.17,17,0.138,1.087],["TMSB4X",33.1536,0.0,0,34,99.9,15,115.834,30.969],["CHCHD2",5.1493,0.0,0,239,99.24,8,4.745,5.16],["TKT",1.0285,0.0,0,1244,96.05,1,0.401,1.045],["ACTB",31.7755,0.0,0,40,99.88,13,28.837,31.853],["PEBP1",3.936,0.0,0,296,99.06,1,1.09,4.011],["COX8A",2.3624,0.0,0,492,98.44,2,2.632,2.355],["LGALS3",4.8098,0.0,0,254,99.2,7,0.335,4.928],["BTG2",7.8795,0.0,0,171,99.46,23,3.18,8.004],["APRT",1.3777,0.0,0,902,97.14,2,2.201,1.356],["POLR2L",2.3067,0.0,0,510,98.38,7,3.085,2.286],["IER2",7.7368,0.0,0,175,99.45,8,5.593,7.793],["RGS1",1.1402,0.0,0,1118,96.45,3,15.761,0.754],["LYZ",1.7357,0.0,0,701,97.77,14,0.118,1.778],["JCHAIN",0.2155,0.0,0,5915,81.2,2,0.056,0.22],["MAP3K19",0.0295,0.0,0,13196,58.04,1,0.005,0.03],["SOD1",3.5236,0.0,0,331,98.95,1,1.448,3.579],["CSTB",2.1825,0.0,0,545,98.27,8,1.119,2.211],["PABPC1",4.438,0.0,0,270,99.14,1,7.633,4.354],["FOS",41.0734,0.0,0,22,99.93,28,16.911,41.712],["DEFB1",0.6167,0.0,0,2189,93.04,2,0.017,0.633],["MMP7",1.8635,0.0,0,642,97.96,21,0.094,1.91],["SCGB2A1",2.3323,0.0,0,501,98.41,17,0.03,2.393],["CSTF3-DT",0.0008,0.0,0,22740,27.7,4,0.007,0.001],["KLF2",15.8767,0.0,0,112,99.65,11,2.092,16.241],["ATP5PO",2.0174,0.0,0,591,98.12,2,1.111,2.041],["SF3B6",1.7032,0.0,0,716,97.73,3,1.157,1.718],["KIF5C-AS1",0.0006,0.0,0,23281,25.98,1,0.002,0.001],["EEF1D",5.9587,0.0,0,216,99.32,10,5.053,5.983],["PLAUR",1.0381,0.0,0,1232,96.09,18,0.082,1.063],["RPS18",44.8386,0.0,0,17,99.95,4,35.357,45.089],["NDUFA13",3.5266,0.0,0,330,98.95,6,3.232,3.534],["RAC1",3.9551,0.0,0,295,99.07,2,1.558,4.018],["MT-ND3",73.152,0.0,0,7,99.98,15,68.499,73.275],["PNP",0.8542,0.0,0,1529,95.14,11,0.269,0.87],["HLA-DPA1",2.361,0.0,0,493,98.44,15,0.266,2.416],["RPS5",14.0118,0.0,0,120,99.62,9,8.107,14.168],["MGP",13.1524,0.0,0,127,99.6,17,0.074,13.498],["PNRC1",6.7708,0.0,0,199,99.37,7,6.294,6.783],["COX5B",3.6912,0.0,0,313,99.01,5,2.518,3.722],["UQCRH",2.7285,0.0,0,417,98.68,1,2.184,2.743],["IER5",1.8529,0.0,0,647,97.95,1,1.605,1.859],["CXCL2",1.3123,0.0,0,959,96.95,11,0.07,1.345],["LINC00379",0.0001,0.0,0,28062,10.78,1,0.0,0.0],["RFC3",0.0997,0.0,0,9231,70.65,1,0.076,0.1],["PLBD1",0.1004,0.0,0,9197,70.76,1,0.004,0.103],["SNUPN",0.1696,0.0,0,6969,77.84,1,0.086,0.172],["PPARGC1B",0.0271,0.0,0,13415,57.35,1,0.004,0.028],["LARGE1",0.2359,0.0,0,5516,82.46,1,0.003,0.242],["IGFBP2",2.4334,0.0,0,467,98.52,21,1.119,2.468],["NKIRAS1",0.1109,0.0,0,8802,72.02,14,0.033,0.113],["GABARAP",4.2747,0.0,0,277,99.12,12,1.942,4.336],["FBLN1",1.9241,0.0,0,619,98.03,4,0.058,1.973],["NUPR1",4.7311,0.0,0,258,99.18,8,0.035,4.855],["ATP5ME",3.0891,0.0,0,367,98.84,1,2.435,3.106],["RPS4X",33.534,0.0,0,32,99.9,13,22.325,33.83],["EEF2",5.1581,0.0,0,238,99.25,4,2.52,5.228],["SCGB2A2",0.2398,0.0,0,5430,82.74,1,0.002,0.246],["DHFR",0.0757,0.0,0,10322,67.18,4,0.07,0.076],["TRIR",2.3381,0.0,0,498,98.42,1,2.17,2.342],["SRP14",9.0323,0.0,0,151,99.52,18,5.835,9.117],["ITGB1",5.4023,0.0,0,229,99.28,1,5.648,5.396],["CYBA",2.1237,0.0,0,561,98.22,17,5.417,2.037],["TRIP11",0.6405,0.0,0,2084,93.38,2,0.379,0.647],["LIAS",0.1383,0.0,0,7860,75.01,1,0.128,0.139],["CD300LD-AS1",0.0005,0.0,0,23970,23.79,1,0.0,0.001],["H3-5",0.0037,0.0,0,18479,41.25,2,0.002,0.004],["CCDC30",0.0926,0.0,0,9522,69.73,2,0.021,0.095],["NDUFB11",1.7242,0.0,0,705,97.76,2,1.458,1.731],["RPL10",50.5915,0.0,0,15,99.96,8,35.207,50.998],["SERTAD1",3.0822,0.0,0,369,98.83,13,0.852,3.141],["SOCS3",6.9479,0.0,0,194,99.39,8,0.417,7.12],["IL1B",1.5916,0.0,0,769,97.56,20,0.226,1.628],["LDHA",4.5564,0.0,0,265,99.16,3,4.542,4.557],["MAFF",1.7625,0.0,0,688,97.82,2,1.867,1.76],["GMFG",0.5672,0.0,0,2422,92.3,1,3.576,0.488],["SND1",0.3944,0.0,0,3533,88.77,1,0.329,0.396],["MRNIP",0.2158,0.0,0,5909,81.21,4,0.129,0.218],["HES4",3.0461,0.0,0,372,98.82,6,0.166,3.122],["DENND1B",0.1228,0.0,0,8357,73.43,2,0.646,0.109],["RPL8",23.1413,0.0,0,72,99.77,35,11.419,23.451],["NRAD1",0.0199,0.0,0,14200,54.85,1,0.005,0.02],["MID1",0.1826,0.0,0,6657,78.84,1,0.005,0.187],["TSC22D1",6.9735,0.0,0,193,99.39,15,0.335,7.149],["MT-CO2",78.094,0.0,0,6,99.98,23,125.885,76.832],["FIRRM",0.0238,0.0,0,13728,56.35,9,0.016,0.024],["MT-ATP6",105.5001,0.0,0,2,100.0,11,152.579,104.256],["HSPA5",2.9066,0.0,0,390,98.76,2,3.006,2.904],["SORBS2",3.9998,0.0,0,293,99.07,1,0.008,4.105],["RPS10",12.5095,0.0,0,129,99.59,3,14.433,12.459],["CKB",3.4495,0.0,0,338,98.93,5,0.027,3.54],["TIMP1",5.2242,0.0,0,234,99.26,28,0.773,5.342],["SFRP4",2.9448,0.0,0,387,98.77,4,0.037,3.022],["ARPC3",3.069,0.0,0,370,98.83,5,4.73,3.025],["TPI1",2.7354,0.0,0,413,98.69,10,3.563,2.713],["CMTM8",0.1897,0.0,0,6486,79.38,1,0.02,0.194],["MT-ND1",33.1736,0.0,0,33,99.9,6,30.654,33.24],["OST4",3.8663,0.0,0,300,99.05,4,4.272,3.856],["JPT1",0.6424,0.0,0,2074,93.41,1,0.762,0.639],["ASAP2",0.3813,0.0,0,3641,88.43,2,0.007,0.391],["ANXA5",3.3929,0.0,0,341,98.92,2,0.616,3.466],["SRGN",5.9066,0.0,0,218,99.31,10,44.518,4.886],["CCNI",5.0951,0.0,0,243,99.23,10,2.456,5.165],["TMEM59",2.8832,0.0,0,394,98.75,1,2.142,2.903],["MPC2",0.7803,0.0,0,1686,94.64,1,0.774,0.78],["CFAP276",0.4819,0.0,0,2872,90.87,9,0.003,0.495],["SOD2",5.1345,0.0,0,240,99.24,12,0.661,5.253],["HSPA8",7.8653,0.0,0,172,99.46,13,5.941,7.916],["RPL36AL",6.6,0.0,0,206,99.35,5,5.568,6.627],["BCAS4",0.0984,0.0,0,9278,70.5,3,0.35,0.092],["IL32",0.802,0.0,0,1632,94.81,1,8.004,0.612],["TUBA1C",1.241,0.0,0,1012,96.79,2,0.363,1.264],["ATP6V0C",2.0917,0.0,0,567,98.2,1,2.232,2.088],["SENP7",0.4024,0.0,0,3474,88.96,1,0.63,0.396],["RGCC",1.4959,0.0,0,827,97.37,11,2.262,1.476],["MYL12A",5.0112,0.0,0,248,99.21,7,7.413,4.948],["SLC25A6",4.1048,0.0,0,286,99.09,1,2.335,4.152],["ALDH2",1.1332,0.0,0,1124,96.43,1,0.024,1.163],["SSR1",0.5882,0.0,0,2317,92.64,1,0.582,0.588],["PI4KA",0.1834,0.0,0,6637,78.9,1,0.275,0.181],["MZT2B",3.2711,0.0,0,352,98.88,6,2.399,3.294],["SEC61B",2.5289,0.0,0,449,98.58,2,2.274,2.536],["COL1A1",4.9761,0.0,0,250,99.21,5,0.097,5.105],["NINJ1",0.6374,0.0,0,2097,93.34,1,0.217,0.648],["ZRANB3",0.0542,0.0,0,11468,63.54,1,0.049,0.054],["SOX10",0.0009,0.0,0,22223,29.34,1,0.0,0.001],["EMP1",2.0341,0.0,0,584,98.15,5,0.046,2.087],["MT-ND5",17.1856,0.0,0,105,99.67,8,21.861,17.062],["RPS12",33.6361,0.0,0,31,99.9,11,27.884,33.788],["ATG5",0.3272,0.0,0,4193,86.67,1,0.365,0.326],["EEF1A1",65.7681,0.0,0,9,99.97,1,35.153,66.577],["RREB1",0.2546,0.0,0,5195,83.48,1,0.146,0.258],["ORC2",0.1394,0.0,0,7833,75.1,1,0.153,0.139],["FBXL20",0.202,0.0,0,6203,80.28,1,0.197,0.202],["SHF",0.0759,0.0,0,10311,67.22,1,0.015,0.077],["TDRD12",0.0134,0.0,0,15180,51.74,1,0.007,0.014],["CRPPA",0.0338,0.0,0,12839,59.18,1,0.008,0.035],["AHCYL2",0.0804,0.0,0,10098,67.9,2,0.059,0.081],["GEM",1.0876,0.0,0,1178,96.26,7,0.044,1.115],["NNMT",2.6944,0.0,0,423,98.66,10,0.023,2.765],["CXCL8",2.0293,0.0,0,586,98.14,13,0.424,2.072],["PPP3CC",0.2089,0.0,0,6070,80.7,1,0.287,0.207],["ATP5IF1",2.5016,0.0,0,455,98.56,9,3.008,2.488],["G0S2",0.7612,0.0,0,1729,94.51,8,0.067,0.779],["MT-ND6",0.4135,0.0,0,3363,89.31,13,0.651,0.407],["YBX3",6.5758,0.0,0,208,99.34,9,0.32,6.741],["ANXA1",4.602,0.0,0,263,99.17,18,6.045,4.564],["VAMP8",0.6638,0.0,0,2014,93.6,2,2.047,0.627],["ID1",3.5681,0.0,0,322,98.98,12,0.069,3.661],["BCAM",2.7918,0.0,0,404,98.72,2,0.015,2.865],["GNAS",8.5172,0.0,0,158,99.5,14,3.056,8.662],["IGLC2",1.595,0.0,0,768,97.56,2,0.216,1.631],["BAG3",2.5741,0.0,0,440,98.6,8,0.149,2.638],["ITM2B",11.7569,0.0,0,132,99.58,19,7.374,11.873],["RNASET2",1.143,0.0,0,1115,96.46,3,0.703,1.155],["ANKS1B",0.0994,0.0,0,9237,70.63,1,0.002,0.102],["DUSP23",0.8772,0.0,0,1496,95.25,2,0.362,0.891],["BTF3",8.6524,0.0,0,156,99.51,10,4.688,8.757],["RPS23",35.0187,0.0,0,28,99.91,17,24.273,35.303],["LDB2",0.7519,0.0,0,1758,94.41,1,0.137,0.768],["KPNA6",0.3441,0.0,0,4016,87.23,1,0.344,0.344],["COX6C",5.1333,0.0,0,241,99.24,5,3.733,5.17],["NUP210L",0.0124,0.0,0,15378,51.11,1,0.001,0.013],["H4C3",3.6412,0.0,0,316,99.0,5,4.374,3.622],["IGHG1",0.7384,0.0,0,1786,94.32,4,0.302,0.75],["MLH1",0.1351,0.0,0,7961,74.69,2,0.144,0.135],["CYSTM1",1.5675,0.0,0,781,97.52,5,0.585,1.593],["EXOSC7",0.2866,0.0,0,4710,85.03,2,0.273,0.287],["ELOB",4.1217,0.0,0,285,99.1,4,3.148,4.147],["LAPTM4A",4.0176,0.0,0,291,99.08,5,1.26,4.09],["CARINH",0.2535,0.0,0,5214,83.42,4,0.759,0.24],["STON2",0.0361,0.0,0,12644,59.8,1,0.001,0.037],["RASGRF2",0.0763,0.0,0,10286,67.3,1,0.056,0.077],["RELN",0.0344,0.0,0,12792,59.33,2,0.0,0.035],["TAB1",0.0729,0.0,0,10447,66.79,1,0.132,0.071],["CDKAL1",0.2196,0.0,0,5829,81.47,1,0.251,0.219],["ZNF667-AS1",0.2814,0.0,0,4782,84.8,1,0.044,0.288],["RERGL",4.2801,0.0,0,276,99.13,5,0.016,4.393],["DDIT4",2.2659,0.0,0,521,98.35,4,8.222,2.108],["ENG",1.0052,0.0,0,1286,95.91,2,0.066,1.03],["SNHG32",1.4446,0.0,0,863,97.26,1,0.806,1.462],["PPM1L",0.2461,0.0,0,5337,83.03,1,0.036,0.252],["UQCR11",3.0857,0.0,0,368,98.83,4,3.475,3.075],["FLNA",8.3011,0.0,0,162,99.49,13,1.055,8.493],["A2M",5.5675,0.0,0,223,99.29,1,0.022,5.714],["ECI1",0.7084,0.0,0,1871,94.05,1,0.313,0.719],["LGMN",0.6545,0.0,0,2039,93.52,1,0.039,0.671],["PRDX6",2.2973,0.0,0,512,98.38,4,1.172,2.327],["MYLK-AS1",0.025,0.0,0,13607,56.74,5,0.025,0.025],["LINC00115",0.0275,0.0,0,13360,57.52,2,0.039,0.027],["CTSW",0.939,0.0,0,1393,95.57,1,29.66,0.18],["UBAP1",0.2688,0.0,0,4979,84.17,5,0.224,0.27],["ZNF79",0.0142,0.0,0,15044,52.17,8,0.022,0.014],["ZNF621",0.1437,0.0,0,7699,75.52,1,0.167,0.143],["KLHL23",0.4373,0.0,0,3171,89.92,1,0.996,0.422],["RGS7",0.0094,0.0,0,16044,48.99,4,0.0,0.01],["BTG1",6.666,0.0,0,205,99.35,14,21.898,6.263],["DAPK1",0.1882,0.0,0,6533,79.23,2,0.015,0.193],["CAMK1D",0.1992,0.0,0,6281,80.03,3,0.109,0.202],["USP8",0.5444,0.0,0,2515,92.01,1,0.63,0.542],["AGAP1",0.15,0.0,0,7510,76.12,1,0.007,0.154],["FBXW12",0.0007,0.0,0,23252,26.07,1,0.0,0.001],["SH2D3C",0.1243,0.0,0,8300,73.61,1,0.219,0.122],["MMD2",0.0002,0.0,0,26678,15.18,1,0.0,0.0],["SUPT3H",0.1383,0.0,0,7859,75.01,1,0.346,0.133],["B3GLCT",0.083,0.0,0,9973,68.29,1,0.05,0.084],["HLA-DQA1",0.762,0.0,0,1727,94.51,4,0.063,0.78],["TNF",0.187,0.0,0,6559,79.15,3,0.287,0.184],["PRDX5",2.4256,0.0,0,470,98.51,12,2.456,2.425],["IGFBP6",1.8194,0.0,0,660,97.9,2,0.022,1.867],["SNHG8",2.2031,0.0,0,539,98.29,1,1.875,2.212],["EIF4A3",1.5484,0.0,0,792,97.48,3,0.827,1.567],["FAR2",0.0597,0.0,0,11141,64.58,1,0.109,0.058],["MRPL18",1.3835,0.0,0,896,97.15,1,0.563,1.405],["TOMM7",6.4482,0.0,0,211,99.33,2,5.077,6.484],["RPS27A",32.522,0.0,0,36,99.89,6,32.673,32.518],["RPL12",26.0688,0.0,0,57,99.82,7,14.085,26.386],["CRIP2",3.3927,0.0,0,342,98.92,8,0.023,3.482],["LINC01788",0.0002,0.0,0,26138,16.89,1,0.0,0.0],["NME5",0.1152,0.0,0,8628,72.57,1,0.001,0.118],["CCL5",0.912,0.0,0,1438,95.43,1,16.135,0.51],["ANKRD44-IT1",0.0055,0.0,0,17412,44.64,1,0.045,0.004],["MICU3",0.3465,0.0,0,3989,87.32,1,0.034,0.355],["TENM4",0.0339,0.0,0,12821,59.24,1,0.0,0.035],["YBX1",6.5859,0.0,0,207,99.34,2,2.83,6.685],["RPL37",28.2424,0.0,0,51,99.84,11,29.196,28.217],["TPM1",10.9068,0.0,0,138,99.56,3,0.263,11.188],["RAB31",0.6689,0.0,0,1987,93.69,1,0.025,0.686],["CHCHD3",0.4166,0.0,0,3334,89.4,4,0.314,0.419],["CTSL",1.3565,0.0,0,925,97.06,2,0.053,1.391],["SMCO4",0.119,0.0,0,8487,73.02,1,0.084,0.12],["RPL23",10.5475,0.0,0,140,99.56,5,8.236,10.608],["C2CD4B",0.9928,0.0,0,1304,95.86,2,0.018,1.019],["HYAL2",0.5996,0.0,0,2270,92.79,3,0.028,0.615],["ATP5MG",3.7368,0.0,0,309,99.02,2,4.572,3.715],["LAMC3",0.086,0.0,0,9823,68.77,1,0.006,0.088],["MIR3667HG",0.014,0.0,0,15073,52.08,1,0.041,0.013],["LINC02851",0.0006,0.0,0,23338,25.8,1,0.0,0.001],["LRRC1",0.1238,0.0,0,8325,73.53,1,0.064,0.125],["LMCD1",1.2284,0.0,0,1025,96.74,6,0.004,1.261],["NDUFB4",2.5813,0.0,0,439,98.61,1,1.349,2.614],["DYNLL1",5.1683,0.0,0,236,99.25,13,2.312,5.244],["GPX4",3.5357,0.0,0,329,98.96,11,1.586,3.587],["H1-10",2.0416,0.0,0,581,98.16,3,3.031,2.015],["ALDOA",0.1556,0.0,0,7355,76.62,11,0.147,0.156],["NLRC4",0.0055,0.0,0,17434,44.57,1,0.0,0.006],["EWSAT1",0.0009,0.0,0,22250,29.26,1,0.0,0.001],["SPIRE1",0.1864,0.0,0,6570,79.11,1,0.233,0.185],["PRDX2",1.9786,0.0,0,603,98.09,4,0.63,2.014],["HSP90B1",4.1795,0.0,0,284,99.1,4,3.458,4.199],["RPL30",31.634,0.0,0,41,99.87,15,27.484,31.744],["H2AC19",0.0773,0.0,0,10239,67.45,1,0.07,0.077],["FLVCR2",0.0175,0.0,0,14551,53.74,4,0.006,0.018],["CSF3",0.243,0.0,0,5380,82.9,2,0.01,0.249],["UQCRQ",2.4021,0.0,0,480,98.48,1,1.938,2.414],["PCSK2",0.001,0.0,0,22151,29.57,1,0.0,0.001],["UQCRB",6.4553,0.0,0,210,99.34,4,3.811,6.525],["CNST",0.2346,0.0,0,5547,82.37,1,0.141,0.237],["EIF3K",3.0424,0.0,0,374,98.81,4,2.467,3.058],["ANXA2",4.587,0.0,0,264,99.16,12,1.409,4.671],["KRT19",0.8965,0.0,0,1458,95.37,9,0.021,0.92],["EMP3",1.5975,0.0,0,767,97.56,10,1.686,1.595],["EVI5",0.3466,0.0,0,3986,87.33,1,0.004,0.356],["CAMTA1",1.2205,0.0,0,1035,96.71,1,0.326,1.244],["NRG3",0.0023,0.0,0,19817,36.99,2,0.0,0.002],["PIM1",0.5101,0.0,0,2697,91.43,1,1.238,0.491],["RPL34",35.7907,0.0,0,27,99.92,9,24.468,36.09],["NBL1",1.0777,0.0,0,1189,96.22,1,0.222,1.1],["CNBP",2.9636,0.0,0,384,98.78,1,1.601,3.0],["STPG2",0.0092,0.0,0,16092,48.84,1,0.0,0.009],["GLI3",0.1277,0.0,0,8193,73.95,1,0.0,0.131],["ERG",0.3885,0.0,0,3590,88.59,1,0.002,0.399],["RPL23A",23.3775,0.0,0,70,99.78,6,20.686,23.449],["CCNJL",0.0186,0.0,0,14380,54.28,5,0.232,0.013],["S100A13",2.0966,0.0,0,565,98.21,5,0.352,2.143],["PTN",2.3211,0.0,0,502,98.41,2,0.005,2.382],["CXCR4",0.9445,0.0,0,1385,95.6,1,5.59,0.822],["ZNF623",0.0657,0.0,0,10825,65.58,1,0.064,0.066],["RGS16",1.5253,0.0,0,808,97.43,3,0.269,1.558],["PFDN5",7.6648,0.0,0,177,99.44,9,5.191,7.73],["RPS17",6.0769,0.0,0,214,99.32,5,4.098,6.129],["NACA2",0.003,0.0,0,19074,39.35,5,0.001,0.003],["FAM174C",0.4029,0.0,0,3469,88.97,1,0.672,0.396],["SPRY1",1.4623,0.0,0,847,97.31,1,2.972,1.422],["TNFRSF12A",1.3647,0.0,0,917,97.09,3,0.078,1.399],["BCL2L14",0.0187,0.0,0,14365,54.33,4,0.0,0.019],["COTL1",1.237,0.0,0,1018,96.77,5,16.769,0.827],["PHLDA2",1.1998,0.0,0,1048,96.67,1,0.075,1.23],["PNPLA6",0.1012,0.0,0,9173,70.84,1,0.134,0.1],["JAZF1",0.3425,0.0,0,4042,87.15,1,0.359,0.342],["KAZN",0.2226,0.0,0,5768,81.66,1,0.009,0.228],["NR2C2",0.142,0.0,0,7754,75.35,1,0.157,0.142],["STX8",0.4262,0.0,0,3255,89.65,1,0.567,0.422],["NOL11",0.222,0.0,0,5784,81.61,1,0.238,0.222],["EDF1",3.5515,0.0,0,327,98.96,3,2.975,3.567],["CHASERR",1.8441,0.0,0,652,97.93,1,2.477,1.827],["LMCD1-AS1",0.0513,0.0,0,11648,62.97,1,0.002,0.053],["INPP5A",0.4193,0.0,0,3312,89.47,1,0.249,0.424],["ATP5PF",2.7566,0.0,0,409,98.7,3,1.979,2.777],["EPCAM",0.8032,0.0,0,1630,94.82,3,0.021,0.824],["GRB14",0.0086,0.0,0,16233,48.39,2,0.0,0.009],["ETS2",2.8127,0.0,0,403,98.72,1,0.185,2.882],["CEP112",0.2111,0.0,0,6018,80.87,1,0.005,0.217],["RPS25",20.4702,0.0,0,90,99.72,4,15.45,20.603],["RASSF4",0.1004,0.0,0,9198,70.76,1,0.104,0.1],["TTC7B",0.0802,0.0,0,10108,67.86,2,0.005,0.082],["ESAM",0.9936,0.0,0,1303,95.86,1,0.002,1.02],["MGC4859",0.0144,0.0,0,14998,52.31,2,0.0,0.015],["HSD17B13",0.0045,0.0,0,17940,42.96,1,0.001,0.005],["PPIL3",0.1654,0.0,0,7089,77.46,1,0.28,0.162],["LINC02763",0.0023,0.0,0,19819,36.99,1,0.0,0.002],["AKAP13",1.685,0.0,0,727,97.69,1,3.683,1.632],["CAV1",6.9952,0.0,0,192,99.39,7,0.022,7.179],["GOLGA7B-DT",0.0005,0.0,0,24214,23.01,1,0.0,0.001],["VARS1",0.1296,0.0,0,8124,74.17,1,0.149,0.129],["VAT1L",0.0062,0.0,0,17114,45.59,1,0.0,0.006],["WDFY4",0.0147,0.0,0,14954,52.45,2,0.0,0.015],["PCYT1B",0.0073,0.0,0,16720,46.84,1,0.0,0.007],["WDFY3",0.3737,0.0,0,3722,88.17,1,0.008,0.383],["MRC2",0.1779,0.0,0,6767,78.49,1,0.008,0.182],["GIMAP8",0.1826,0.0,0,6656,78.84,1,0.131,0.184],["DDX10",0.1812,0.0,0,6691,78.73,1,0.22,0.18],["TRAK1",0.2111,0.0,0,6017,80.87,1,0.101,0.214],["LRRC49",0.1121,0.0,0,8756,72.16,1,0.0,0.115],["SDCBP",2.0776,0.0,0,572,98.18,1,1.196,2.101],["HNRNPF",1.5283,0.0,0,805,97.44,1,1.4,1.532],["STAG1",0.6285,0.0,0,2138,93.21,1,0.373,0.635],["S100A8",0.7732,0.0,0,1698,94.6,5,0.092,0.791],["MT1E",4.2692,0.0,0,279,99.12,3,0.092,4.38],["PPP1R14A",7.35,0.0,0,185,99.41,7,0.025,7.543],["KRT7",0.2951,0.0,0,4595,85.39,1,0.006,0.303],["SPMIP6",0.3241,0.0,0,4231,86.55,3,0.015,0.332],["BCL2A1",0.2795,0.0,0,4809,84.71,4,0.099,0.284],["TAFA2",0.0226,0.0,0,13861,55.93,3,0.015,0.023],["AMMECR1",0.059,0.0,0,11183,64.45,2,0.049,0.059],["DYNLT1",2.0765,0.0,0,573,98.18,6,1.409,2.094],["CH25H",1.995,0.0,0,596,98.11,1,0.056,2.046],["HMOX1",0.3722,0.0,0,3733,88.13,6,0.207,0.377],["ODAD2",0.0556,0.0,0,11381,63.82,1,0.002,0.057],["GAS7",0.1382,0.0,0,7863,75.0,1,0.8,0.121],["GEMIN6",0.1258,0.0,0,8252,73.76,1,0.128,0.126],["FOXK2",0.2386,0.0,0,5450,82.67,1,0.237,0.239],["COL3A1",5.5845,0.0,0,222,99.3,5,0.102,5.729],["VTCN1",0.0209,0.0,0,14080,55.23,1,0.0,0.021],["CD14",0.5604,0.0,0,2442,92.24,4,0.025,0.575],["TPPP3",0.6644,0.0,0,2007,93.62,3,0.004,0.682],["MMACHC",0.018,0.0,0,14483,53.95,6,0.006,0.018],["RHOB",6.7395,0.0,0,200,99.37,4,1.214,6.886],["STMN1",1.0852,0.0,0,1181,96.25,2,0.304,1.106],["SELENOM",7.4487,0.0,0,183,99.42,3,0.153,7.641],["IER3-AS1",0.0164,0.0,0,14714,53.22,17,0.011,0.017],["MORN2",0.456,0.0,0,3031,90.37,1,0.031,0.467],["ARB2A",0.3692,0.0,0,3757,88.06,1,0.421,0.368],["H2AC18",0.0002,0.0,0,25975,17.41,2,0.003,0.0],["CSRP2",3.8859,0.0,0,298,99.06,2,0.009,3.988],["LCN2",0.3962,0.0,0,3520,88.81,1,0.037,0.406],["VWA8",0.1313,0.0,0,8068,74.35,1,0.102,0.132],["DNAH3",0.018,0.0,0,14476,53.97,1,0.0,0.018],["SOX6",0.3099,0.0,0,4423,85.94,1,0.001,0.318],["CD9",3.8747,0.0,0,299,99.05,5,0.645,3.96],["STEAP1B",0.0732,0.0,0,10430,66.84,1,0.002,0.075],["SEM1",2.8586,0.0,0,396,98.74,2,1.446,2.896],["PSME1",2.0329,0.0,0,585,98.14,1,3.336,1.998],["PARK7",2.9817,0.0,0,381,98.79,2,2.164,3.003],["ARHGAP24",0.1138,0.0,0,8687,72.38,1,0.0,0.117],["CAP2",0.4982,0.0,0,2767,91.21,1,0.0,0.511],["MIR100HG",0.1986,0.0,0,6290,80.0,1,0.009,0.204],["SUGCT",0.0603,0.0,0,11118,64.65,1,0.0,0.062],["UBE2V1",1.0766,0.0,0,1193,96.21,1,1.329,1.07],["RBM39",2.7587,0.0,0,408,98.71,1,6.178,2.668],["DDX5",7.0548,0.0,0,190,99.4,7,9.618,6.987],["HSPE1",6.7047,0.0,0,202,99.36,7,5.588,6.734],["SLC25A5",1.918,0.0,0,623,98.02,1,1.617,1.926],["RPL3",29.5741,0.0,0,45,99.86,2,19.138,29.85],["GNAZ",0.0265,0.0,0,13452,57.23,1,0.008,0.027],["CFAP77",0.0266,0.0,0,13443,57.26,1,0.0,0.027],["DCPS",0.2322,0.0,0,5591,82.23,1,0.271,0.231],["RAD51AP2",0.0025,0.0,0,19597,37.69,4,0.0,0.003],["MSX1",0.9476,0.0,0,1382,95.61,2,0.011,0.972],["GPNMB",0.7021,0.0,0,1893,93.98,2,0.021,0.72],["PHPT1",1.6937,0.0,0,723,97.7,2,1.083,1.71],["PRTFDC1",0.0772,0.0,0,10243,67.43,1,0.01,0.079],["EPS15-AS1",0.0021,0.0,0,20075,36.17,1,0.004,0.002],["MGC16275",0.0118,0.0,0,15485,50.77,10,0.015,0.012],["DLGAP5",0.0173,0.0,0,14584,53.63,1,0.0,0.018],["USH2A",0.0006,0.0,0,23678,24.72,1,0.0,0.001],["RYR2",0.3948,0.0,0,3527,88.79,2,0.0,0.405],["IL34",0.0153,0.0,0,14852,52.78,1,0.002,0.016],["COBL",0.0561,0.0,0,11347,63.92,1,0.008,0.057],["CD99L2",0.1188,0.0,0,8492,73.0,1,0.081,0.12],["SPINT2",0.9174,0.0,0,1426,95.47,4,0.032,0.941],["HBB",0.8897,0.0,0,1470,95.33,3,0.006,0.913],["PSENEN",0.7864,0.0,0,1670,94.69,2,0.712,0.788],["EIF4A2",4.0347,0.0,0,290,99.08,4,3.444,4.05],["IDO1",0.4714,0.0,0,2942,90.65,1,0.039,0.483],["FER1L6",0.0006,0.0,0,23569,25.06,1,0.0,0.001],["LINC01151",0.0003,0.0,0,25202,19.87,1,0.0,0.0],["ATP1A1",1.1775,0.0,0,1075,96.59,1,0.612,1.192],["MYBPC1",0.0006,0.0,0,23590,25.0,2,0.002,0.001],["FGD6",0.1536,0.0,0,7415,76.43,1,0.009,0.157],["ARPC1B",2.2105,0.0,0,538,98.29,2,3.289,2.182],["GJA1",0.7889,0.0,0,1665,94.71,1,0.015,0.809],["UBR2",0.3609,0.0,0,3845,87.78,1,0.477,0.358],["LINC02428",0.0001,0.0,0,27925,11.21,1,0.0,0.0],["KANK1",0.3542,0.0,0,3911,87.57,1,0.019,0.363],["USP39",0.1335,0.0,0,8003,74.56,1,0.218,0.131],["AMBRA1",0.15,0.0,0,7515,76.11,4,0.071,0.152],["SPEN-AS1",0.1732,0.0,0,6888,78.1,4,0.221,0.172],["SELENOK",2.1364,0.0,0,556,98.24,3,2.564,2.125],["HIP1",0.5504,0.0,0,2487,92.1,1,0.343,0.556],["FAM171A1",0.1966,0.0,0,6330,79.88,1,0.0,0.202],["PSMB3",1.3703,0.0,0,909,97.11,1,1.289,1.372],["FOSB",10.4664,0.0,0,142,99.55,5,3.889,10.64],["CHD9",1.0002,0.0,0,1292,95.9,1,1.319,0.992],["PIGB",0.0481,0.0,0,11850,62.32,1,0.078,0.047],["LINC02505",0.0,0.0,0,29844,5.11,1,0.0,0.0],["GJA4",0.8933,0.0,0,1464,95.35,2,0.001,0.917],["ZFAS1",3.7882,0.0,0,307,99.03,6,3.271,3.802],["ZFP36L1",6.6976,0.0,0,203,99.36,2,1.569,6.833],["RPL9",23.6655,0.0,0,68,99.79,2,14.78,23.9],["RRAD",2.406,0.0,0,479,98.48,4,0.106,2.467],["NFKBIB",0.2098,0.0,0,6052,80.76,1,0.314,0.207],["VMP1",1.5024,0.0,0,824,97.38,1,1.182,1.511],["NCMAP",0.0121,0.0,0,15425,50.96,1,0.0,0.012],["MMP16",0.0701,0.0,0,10585,66.35,1,0.002,0.072],["EEF1G",8.6943,0.0,0,155,99.51,5,5.714,8.773],["RPL18A",22.3311,0.0,0,77,99.76,5,15.991,22.498],["MYL12B",4.4863,0.0,0,268,99.15,6,4.801,4.478],["DNPH1",0.5534,0.0,0,2476,92.13,1,0.144,0.564],["TMEM258",2.0757,0.0,0,574,98.18,2,2.087,2.075],["CCDC152",0.0347,0.0,0,12759,59.43,2,0.034,0.035],["HSPD1",5.4172,0.0,0,227,99.28,4,4.213,5.449],["ZFAND2A",0.7532,0.0,0,1751,94.44,5,0.484,0.76],["PLCXD3",0.092,0.0,0,9557,69.62,1,0.0,0.094],["SVOP",0.0005,0.0,0,24125,23.29,1,0.0,0.001],["RABEP2",0.0931,0.0,0,9494,69.82,1,0.115,0.093],["LDHB",2.3818,0.0,0,484,98.46,8,1.178,2.414],["GPR183",0.6461,0.0,0,2061,93.45,2,0.387,0.653],["NUDT1",0.1916,0.0,0,6439,79.53,1,0.273,0.19],["LPP",4.7573,0.0,0,256,99.19,1,0.697,4.864],["KLF4",2.7473,0.0,0,411,98.7,9,0.037,2.819],["CTSZ",1.2114,0.0,0,1042,96.69,5,0.55,1.229],["ARF5",0.7778,0.0,0,1689,94.63,1,0.916,0.774],["KIF26B",0.0893,0.0,0,9688,69.2,1,0.027,0.091],["SLC12A3",0.001,0.0,0,21948,30.22,1,0.0,0.001],["LINC01740",0.0016,0.0,0,20854,33.69,1,0.0,0.002],["LINC02250",0.0036,0.0,0,18594,40.88,1,0.002,0.004],["CBLB",0.4355,0.0,0,3180,89.89,1,2.004,0.394],["RNF11",0.5395,0.0,0,2540,91.93,1,0.327,0.545],["FCER1G",1.0946,0.0,0,1169,96.29,5,15.4,0.717],["SLC25A3",3.5632,0.0,0,324,98.97,6,1.899,3.607],["MIR4300HG",0.0047,0.0,0,17832,43.3,2,0.0,0.005],["CCDC18",0.0483,0.0,0,11829,62.39,1,0.068,0.048],["SSR2",2.1462,0.0,0,554,98.24,5,2.452,2.138],["SOX18",1.288,0.0,0,980,96.89,1,0.045,1.321],["VPS28",1.8775,0.0,0,634,97.99,1,1.421,1.89],["TFF3",0.244,0.0,0,5367,82.94,1,0.031,0.25],["RRAS",2.2629,0.0,0,523,98.34,2,0.251,2.316],["CD69",0.6781,0.0,0,1958,93.78,1,8.472,0.472],["RPL36A",14.7021,0.0,0,116,99.63,1,12.186,14.769],["FAM177B",0.0107,0.0,0,15733,49.98,2,0.002,0.011],["GSTO1",1.3272,0.0,0,948,96.99,1,0.816,1.341],["RPS20",9.5355,0.0,0,149,99.53,2,8.529,9.562],["DAD1",2.355,0.0,0,494,98.43,5,1.965,2.365],["MUSTN1",7.5533,0.0,0,179,99.43,3,0.025,7.752],["ATP1B3",1.7674,0.0,0,686,97.82,1,1.076,1.786],["ADCY10",0.0037,0.0,0,18515,41.13,1,0.0,0.004],["MSH6",0.2527,0.0,0,5232,83.37,1,0.186,0.254],["DDIAS",0.0071,0.0,0,16782,46.64,1,0.002,0.007],["NOC3L",0.2394,0.0,0,5437,82.72,1,0.267,0.239],["CASC3",0.4444,0.0,0,3117,90.09,1,0.225,0.45],["ST6GAL1",0.2687,0.0,0,4983,84.16,1,0.055,0.274],["GGACT",0.0313,0.0,0,13042,58.53,1,0.054,0.031],["PDK4",1.387,0.0,0,892,97.17,3,0.036,1.423],["NPC2",1.9165,0.0,0,624,98.02,4,0.44,1.956],["EFHD1",1.0781,0.0,0,1188,96.23,1,0.007,1.106],["PROSER3",0.0455,0.0,0,12011,61.81,1,0.057,0.045],["POLDIP3",0.1929,0.0,0,6412,79.62,1,0.191,0.193],["MAPK10",0.2526,0.0,0,5234,83.36,1,0.006,0.259],["RTN3",0.8448,0.0,0,1540,95.11,1,0.575,0.852],["KSR1",0.1423,0.0,0,7745,75.38,1,0.734,0.127],["FREM2",0.0281,0.0,0,13305,57.7,1,0.0,0.029],["LINC02240",0.0014,0.0,0,21184,32.65,3,0.0,0.001],["COX7A2",3.2929,0.0,0,351,98.89,5,2.842,3.305],["EFHD2",0.4792,0.0,0,2891,90.81,1,1.938,0.441],["USP45",0.0783,0.0,0,10197,67.58,1,0.05,0.079],["NRG2",0.0402,0.0,0,12343,60.76,1,0.006,0.041],["MCOLN2",0.0134,0.0,0,15192,51.7,1,0.012,0.013],["STIM1",0.2189,0.0,0,5844,81.42,1,0.358,0.215],["RARRES2",1.9876,0.0,0,599,98.1,2,0.013,2.04],["STOM",2.1223,0.0,0,562,98.22,1,1.33,2.143],["TSPAN7",0.6358,0.0,0,2104,93.31,1,0.002,0.652],["KAT7",0.2652,0.0,0,5043,83.97,1,0.306,0.264],["CAVIN1",3.4563,0.0,0,337,98.93,1,0.013,3.547],["LINC00309",0.0084,0.0,0,16322,48.1,1,0.003,0.009],["PHYH",0.418,0.0,0,3323,89.44,1,0.369,0.419],["LAPTM4B",0.9187,0.0,0,1421,95.48,2,0.129,0.94],["CYCS",2.4784,0.0,0,456,98.55,1,1.689,2.499],["COPS9",1.447,0.0,0,861,97.27,1,1.61,1.443],["PDGFB",0.2387,0.0,0,5445,82.69,1,0.013,0.245],["MRPL14",0.5439,0.0,0,2518,92.0,1,0.457,0.546],["RPS27AP5",0.0278,0.0,0,13334,57.61,2,0.018,0.028],["HINT1",4.3585,0.0,0,273,99.14,7,3.156,4.39],["TBK1",0.2382,0.0,0,5464,82.63,1,0.41,0.234],["ARMC3",0.0691,0.0,0,10640,66.17,1,0.0,0.071],["PLXNC1",0.0808,0.0,0,10077,67.96,1,0.113,0.08],["NPM1",7.899,0.0,0,170,99.46,1,4.259,7.995],["AAK1",0.7235,0.0,0,1835,94.17,1,1.985,0.69],["SPATA7",0.1141,0.0,0,8676,72.42,1,0.014,0.117],["HDAC2",0.495,0.0,0,2784,91.15,1,0.262,0.501],["RPL41",57.8513,0.0,0,14,99.96,1,54.346,57.944],["MEP1A",0.0,0.0,0,31177,0.87,1,0.0,0.0],["UQCR10",1.8007,0.0,0,670,97.87,2,1.981,1.796],["SNHG16",0.7774,0.0,0,1690,94.63,1,0.357,0.789],["MECOM",0.5303,0.0,0,2585,91.78,1,0.01,0.544],["HNRNPA2B1",5.4033,0.0,0,228,99.28,2,7.822,5.339],["BALR6",0.0,0.0,0,31296,0.49,1,0.0,0.0],["ARF1",2.2224,0.0,0,533,98.31,1,2.409,2.217],["ZNF710",0.0453,0.0,0,12021,61.78,1,0.083,0.044],["PLA2G4C",0.0775,0.0,0,10231,67.47,1,0.002,0.08],["COX6A1",3.7918,0.0,0,305,99.03,1,2.652,3.822],["TMEM150C",0.0985,0.0,0,9274,70.52,1,0.0,0.101],["NDRG1",1.1845,0.0,0,1066,96.61,1,0.176,1.211],["VWF",1.6374,0.0,0,749,97.62,6,0.026,1.68],["ALG9-IT1",0.0008,0.0,0,22669,27.92,1,0.002,0.001],["HOATZ",0.2707,0.0,0,4951,84.26,1,0.011,0.278],["H2BC4",0.0868,0.0,0,9797,68.85,1,0.202,0.084],["FBXO27",0.0171,0.0,0,14624,53.5,1,0.012,0.017],["PSMB6",1.5745,0.0,0,775,97.54,1,1.141,1.586],["H3-3A",11.1916,0.0,0,137,99.57,2,10.796,11.202],["LINC02253",0.0173,0.0,0,14580,53.64,1,0.0,0.018],["TXNRD3",0.0355,0.0,0,12698,59.63,1,0.028,0.036],["AGBL5",0.0672,0.0,0,10747,65.83,1,0.025,0.068],["RSL1D1-DT",0.0227,0.0,0,13847,55.97,1,0.021,0.023],["COL6A6",0.0086,0.0,0,16250,48.33,1,0.0,0.009],["DNAAF5",0.0961,0.0,0,9366,70.22,1,0.037,0.098],["SPIRE2",0.0192,0.0,0,14297,54.54,1,0.009,0.019],["C1QC",0.409,0.0,0,3410,89.16,1,0.012,0.419],["DBI",1.8957,0.0,0,627,98.01,1,2.28,1.885],["MT1M",4.9997,0.0,0,249,99.21,5,0.006,5.132],["NFAT5",0.7409,0.0,0,1782,94.34,1,0.333,0.752],["LCMT1",0.2286,0.0,0,5645,82.05,1,0.188,0.23],["SLA2",0.0913,0.0,0,9591,69.51,1,2.73,0.021],["SNRNP200",0.5165,0.0,0,2651,91.57,1,0.78,0.51],["WDR59",0.1208,0.0,0,8429,73.2,1,0.201,0.119],["RPS28",27.8601,0.0,0,52,99.84,2,22.079,28.013],["RND1",0.4421,0.0,0,3130,90.05,1,0.01,0.454],["CRYL1",0.2339,0.0,0,5561,82.32,1,0.119,0.237],["LYPD6B",0.0081,0.0,0,16425,47.78,1,0.0,0.008],["DNAH8",0.0006,0.0,0,23337,25.8,1,0.0,0.001],["ALOX5",0.0607,0.0,0,11098,64.72,1,0.011,0.062],["CLIP2",0.1193,0.0,0,8479,73.04,1,0.015,0.122],["PRKAR2A",0.4633,0.0,0,2985,90.51,1,0.384,0.465],["RNF19B",0.2456,0.0,0,5344,83.01,2,0.186,0.247],["IGF2",0.0316,0.0,0,13014,58.62,1,0.0,0.032],["GLIPR2",0.3062,0.0,0,4476,85.77,1,2.099,0.259],["EFCAB13-DT",0.0132,0.0,0,15245,51.53,1,0.0,0.013],["ROCK2",1.1937,0.0,0,1054,96.65,1,0.255,1.218],["GRN",1.2146,0.0,0,1038,96.7,1,0.282,1.239],["DNM1L",0.4901,0.0,0,2819,91.04,1,0.54,0.489],["RIPOR2",0.2358,0.0,0,5518,82.46,1,0.284,0.235],["FBXO40",0.0005,0.0,0,23833,24.22,1,0.002,0.001],["NOTCH2NLA",0.034,0.0,0,12817,59.25,1,0.017,0.034],["KLHL8",0.1394,0.0,0,7831,75.1,1,0.084,0.141],["CPS1",0.0119,0.0,0,15476,50.79,1,0.001,0.012],["ENTPD4-DT",0.0006,0.0,0,23578,25.03,1,0.003,0.001],["ST8SIA1",0.0292,0.0,0,13219,57.97,1,0.004,0.03],["LIPA",0.2901,0.0,0,4669,85.16,1,0.133,0.294],["PPP1R13B",0.2015,0.0,0,6212,80.25,1,0.077,0.205],["PLAAT4",0.7593,0.0,0,1736,94.48,2,3.642,0.683],["COMMD6",3.6118,0.0,0,318,98.99,2,3.757,3.608],["PLPPR5",0.0011,0.0,0,21747,30.86,1,0.0,0.001],["SARAF",2.1768,0.0,0,547,98.26,3,3.54,2.141],["GADD45A",2.3726,0.0,0,489,98.45,2,0.991,2.409],["PGK1",1.5699,0.0,0,778,97.53,1,5.655,1.462],["SEC11C",0.6379,0.0,0,2093,93.35,1,0.728,0.635],["APOO",0.1188,0.0,0,8495,72.99,1,0.099,0.119],["THBD",1.0357,0.0,0,1235,96.08,5,0.022,1.062],["TCEAL9",1.6014,0.0,0,765,97.57,1,0.02,1.643],["PLTP",0.5025,0.0,0,2746,91.27,3,0.011,0.515],["CFAP144",0.289,0.0,0,4681,85.12,2,0.004,0.296],["BEX3",1.5032,0.0,0,821,97.39,1,0.014,1.543],["KLF6",5.0117,0.0,0,247,99.22,3,6.035,4.985],["PPIA",6.8297,0.0,0,195,99.38,3,5.612,6.862],["DGUOK",0.736,0.0,0,1796,94.29,1,0.953,0.73],["MMP19",0.1507,0.0,0,7496,76.17,1,0.023,0.154],["NDE1",0.172,0.0,0,6916,78.01,4,0.225,0.171],["TUBB3",0.2753,0.0,0,4877,84.5,1,0.011,0.282],["NOP53",3.4683,0.0,0,335,98.94,5,1.956,3.508],["RNFT2",0.0051,0.0,0,17611,44.01,1,0.001,0.005],["IER5L",2.4219,0.0,0,473,98.5,1,0.389,2.476],["OXR1",0.566,0.0,0,2425,92.29,4,0.448,0.569],["SNHG7",1.9427,0.0,0,609,98.07,2,0.624,1.978],["ENO1",2.2744,0.0,0,520,98.35,2,4.371,2.219],["MT1G",0.4058,0.0,0,3441,89.06,1,0.056,0.415],["MKLN1-AS",0.0335,0.0,0,12868,59.09,1,0.004,0.034],["SLC35E4",0.0665,0.0,0,10779,65.73,1,0.015,0.068],["NDUFC1",1.8058,0.0,0,667,97.88,1,0.415,1.843],["BRI3",2.3477,0.0,0,496,98.43,2,0.549,2.395],["RAB36",0.0262,0.0,0,13483,57.13,1,0.006,0.027],["PLVAP",0.8011,0.0,0,1634,94.81,3,0.002,0.822],["AFF4",0.9839,0.0,0,1317,95.82,1,0.795,0.989],["ZBTB24",0.0997,0.0,0,9225,70.67,1,0.092,0.1],["CD52",0.6325,0.0,0,2119,93.27,1,7.237,0.458],["MEG3",0.6055,0.0,0,2242,92.87,1,0.05,0.62],["CCNT2-AS1",0.0218,0.0,0,13956,55.63,1,0.013,0.022],["TSPAN9",0.2514,0.0,0,5253,83.3,1,0.002,0.258],["NTSR1",0.0007,0.0,0,23077,26.63,1,0.007,0.001],["EIF1B",1.5566,0.0,0,786,97.5,1,0.84,1.575],["ZNF331",1.6742,0.0,0,732,97.68,1,4.369,1.603],["SRI",1.3347,0.0,0,940,97.01,1,1.54,1.329],["ARPC2",2.7266,0.0,0,418,98.67,1,6.171,2.636],["TLK2",0.2827,0.0,0,4761,84.86,1,0.315,0.282],["CTSB",2.0403,0.0,0,582,98.15,1,0.214,2.088],["TMEM141",0.4903,0.0,0,2818,91.04,1,0.517,0.49],["IGFBP3",1.5029,0.0,0,822,97.39,5,0.1,1.54],["CCT3",1.2551,0.0,0,1002,96.82,1,0.763,1.268],["HERPUD1",1.7635,0.0,0,687,97.82,3,2.071,1.755],["MMP2",0.8778,0.0,0,1494,95.25,2,0.044,0.9],["DPYSL5",0.0003,0.0,0,25017,20.46,1,0.0,0.0],["AKAP12",1.6773,0.0,0,731,97.68,2,0.026,1.721],["LINC01705",0.0025,0.0,0,19545,37.86,1,0.0,0.003],["PIPOX",0.0075,0.0,0,16647,47.07,1,0.003,0.008],["SLC25A13",0.2029,0.0,0,6177,80.36,2,0.125,0.205],["PLEKHH2",0.4274,0.0,0,3242,89.69,1,0.022,0.438],["NMNAT2",0.0258,0.0,0,13523,57.0,1,0.0,0.026],["SNCG",2.1648,0.0,0,551,98.25,1,0.0,2.222],["BLOC1S1",1.4547,0.0,0,854,97.29,1,1.535,1.453],["POMP",2.2192,0.0,0,537,98.3,4,1.779,2.231],["MIR155HG",0.1325,0.0,0,8039,74.44,3,0.177,0.131],["MKLN1",0.5734,0.0,0,2386,92.42,2,0.401,0.578],["SLC43A2",0.1076,0.0,0,8928,71.62,1,0.028,0.11],["SKA3",0.0053,0.0,0,17524,44.28,1,0.01,0.005],["EEF1B2",8.0342,0.0,0,169,99.47,1,6.734,8.069],["SLC39A12",0.0006,0.0,0,23474,25.36,1,0.0,0.001],["NUBPL",0.1199,0.0,0,8459,73.11,1,0.04,0.122],["BAZ1A",0.6083,0.0,0,2226,92.93,1,0.722,0.605],["PDE3B",0.0799,0.0,0,10130,67.79,1,1.47,0.043],["PSMB5",1.1597,0.0,0,1097,96.52,1,0.224,1.185],["TAMALIN",0.5431,0.0,0,2523,91.98,3,0.256,0.551],["SMARCB1",0.3967,0.0,0,3516,88.82,1,0.334,0.398],["UQCC6",0.0902,0.0,0,9634,69.37,1,0.134,0.089],["DSE",0.2748,0.0,0,4887,84.46,1,0.069,0.28],["TOB1",1.4153,0.0,0,876,97.22,4,0.139,1.449],["IGFBP1",0.7828,0.0,0,1680,94.66,1,0.231,0.797],["MYC",2.2956,0.0,0,513,98.37,3,0.105,2.353],["CLIC1",3.587,0.0,0,319,98.99,7,7.443,3.485],["EFHB",0.0259,0.0,0,13511,57.04,1,0.005,0.026],["ZNF585B",0.0626,0.0,0,10993,65.05,1,0.049,0.063],["ADARB2",0.0041,0.0,0,18189,42.17,1,0.004,0.004],["BACH2",0.1173,0.0,0,8534,72.87,1,0.227,0.114],["ZBTB1",0.2942,0.0,0,4605,85.36,1,0.88,0.279],["RPS7",20.5709,0.0,0,89,99.72,2,16.678,20.674],["MT-ATP8",1.1019,0.0,0,1157,96.32,1,1.088,1.102],["CRISPLD2",1.9463,0.0,0,607,98.07,2,0.039,1.997],["KRT18",1.1974,0.0,0,1050,96.66,1,0.038,1.228],["MRPL51",1.3087,0.0,0,961,96.95,1,0.892,1.32],["MMP10",0.181,0.0,0,6695,78.72,1,0.017,0.185],["CLEC2B",1.1867,0.0,0,1062,96.63,1,3.7,1.12],["PCNX2",0.0813,0.0,0,10051,68.04,1,0.22,0.078],["KDM5B",0.5295,0.0,0,2591,91.76,1,1.121,0.514],["SPON2",0.6279,0.0,0,2143,93.19,2,0.332,0.636],["RPS29",20.3806,0.0,0,91,99.71,2,33.193,20.042],["DNM3",0.1126,0.0,0,8738,72.22,2,0.002,0.116],["HLA-DMA",0.7307,0.0,0,1812,94.24,1,0.079,0.748],["HSBP1",1.4177,0.0,0,874,97.22,1,0.589,1.44],["UBE2D2",1.7393,0.0,0,700,97.78,1,1.508,1.745],["TNIP1",0.3146,0.0,0,4364,86.13,1,0.558,0.308],["ATP8B1-AS1",0.044,0.0,0,12111,61.49,1,0.059,0.044],["QSER1",0.1969,0.0,0,6327,79.89,1,0.07,0.2],["SCNN1A",0.1002,0.0,0,9206,70.73,1,0.013,0.102],["NUP160",0.1848,0.0,0,6609,78.99,1,0.2,0.184],["PRR5",0.0729,0.0,0,10446,66.79,1,0.063,0.073],["GJC1",0.1853,0.0,0,6594,79.04,1,0.002,0.19],["RNF38",0.2988,0.0,0,4554,85.52,1,0.356,0.297],["PLAC1",0.0008,0.0,0,22793,27.53,1,0.0,0.001],["EFNA1",0.5354,0.0,0,2556,91.88,1,0.016,0.549],["PCDH11X",0.0139,0.0,0,15095,52.01,1,0.0,0.014],["ENPP2",0.9579,0.0,0,1365,95.66,2,0.012,0.983],["PPA1",1.812,0.0,0,666,97.89,1,0.638,1.843],["PGRMC1",1.6322,0.0,0,754,97.61,1,0.211,1.67],["PRSS23",0.9961,0.0,0,1300,95.87,1,0.04,1.021],["PPP1R12B",1.7684,0.0,0,685,97.83,1,0.146,1.811],["RPL21",24.7882,0.0,0,62,99.81,1,20.694,24.896],["CCL20",0.3441,0.0,0,4015,87.24,1,0.133,0.35],["GPC5",0.008,0.0,0,16471,47.63,1,0.0,0.008],["POLR3G",0.0139,0.0,0,15099,51.99,1,0.017,0.014],["SLC6A16",0.0491,0.0,0,11773,62.57,1,0.008,0.05],["STK32B",0.0133,0.0,0,15210,51.64,1,0.0,0.014],["BMS1P14",0.0017,0.0,0,20529,34.73,1,0.0,0.002],["LINC02391",0.0014,0.0,0,21222,32.52,1,0.002,0.001],["WNK1",0.7955,0.0,0,1647,94.77,1,0.691,0.798],["KDSR",0.5759,0.0,0,2372,92.46,1,0.083,0.589],["MFAP2",0.3473,0.0,0,3977,87.36,1,0.001,0.356],["EIF3H",2.2529,0.0,0,526,98.33,2,1.333,2.277],["CDH4",0.0009,0.0,0,22268,29.2,1,0.0,0.001],["CFD",0.556,0.0,0,2463,92.17,1,0.023,0.57],["CDYL",0.3461,0.0,0,3994,87.3,1,0.977,0.33],["VPS13B",0.3243,0.0,0,4227,86.56,1,0.376,0.323],["RAN",2.2941,0.0,0,516,98.36,1,2.189,2.297],["FAM81A",0.0261,0.0,0,13492,57.1,1,0.001,0.027],["LINC02249",0.0021,0.0,0,20051,36.25,1,0.0,0.002],["ARL3",0.9043,0.0,0,1450,95.39,1,0.092,0.926],["ARID5B",3.1523,0.0,0,358,98.86,1,0.196,3.23],["GLUL",2.0443,0.0,0,580,98.16,1,1.2,2.067],["MIDN",2.2263,0.0,0,532,98.31,1,1.062,2.257],["CD99",2.6033,0.0,0,437,98.61,1,3.408,2.582],["SMDT1",1.4619,0.0,0,848,97.31,1,1.142,1.47],["ARHGAP31",0.1914,0.0,0,6446,79.51,1,0.014,0.196],["DIP2C",0.2237,0.0,0,5748,81.73,1,0.017,0.229],["TPM1-AS",0.0026,0.0,0,19452,38.15,1,0.0,0.003],["BSG",1.9069,0.0,0,626,98.01,1,1.451,1.919],["MRPL33",2.1866,0.0,0,544,98.27,1,1.519,2.204],["COL18A1",1.2357,0.0,0,1020,96.76,1,0.088,1.266],["ZNF878",0.0159,0.0,0,14787,52.99,1,0.0,0.016],["DENND2A",0.0631,0.0,0,10963,65.14,1,0.0,0.065],["TANGO6",0.0603,0.0,0,11113,64.67,1,0.064,0.06],["PIGN",0.1151,0.0,0,8630,72.56,1,0.109,0.115],["SELENOH",1.6281,0.0,0,757,97.6,1,2.194,1.613],["MOV10",0.0856,0.0,0,9841,68.71,2,0.063,0.086],["C12orf57",3.3234,0.0,0,348,98.9,1,1.325,3.376],["CTSK",0.6122,0.0,0,2208,92.98,2,0.011,0.628],["SKP1",4.3972,0.0,0,272,99.14,1,2.839,4.438],["PLAAT3",0.9978,0.0,0,1296,95.88,1,0.561,1.009],["MARCKSL1",1.5778,0.0,0,774,97.54,2,0.097,1.617],["LINC00621",0.0359,0.0,0,12663,59.74,1,0.0,0.037],["AIF1",0.6102,0.0,0,2215,92.96,3,0.043,0.625],["SCO2",0.1901,0.0,0,6476,79.41,1,0.114,0.192],["H2AC20",0.6788,0.0,0,1955,93.79,1,1.568,0.655],["BST2",1.9792,0.0,0,602,98.09,1,2.43,1.967],["TCF7L1",0.2775,0.0,0,4842,84.61,1,0.002,0.285],["POLD2",0.4285,0.0,0,3232,89.73,1,0.149,0.436],["LINC01203",0.0003,0.0,0,25181,19.94,1,0.0,0.0],["CCDC85B",2.0872,0.0,0,569,98.19,1,1.226,2.11],["SUB1",2.6459,0.0,0,430,98.64,1,3.489,2.624],["IGHG3",0.42,0.0,0,3306,89.49,2,0.247,0.424],["PKM",1.8807,0.0,0,632,97.99,2,1.656,1.887],["ATG10",0.1234,0.0,0,8339,73.49,1,0.149,0.123],["TALDO1",1.2333,0.0,0,1022,96.75,1,0.791,1.245],["RNF157",0.0203,0.0,0,14147,55.02,1,0.099,0.018],["RTN4RL1",0.0133,0.0,0,15214,51.63,1,0.002,0.014],["SLC11A2",0.1665,0.0,0,7053,77.58,1,0.074,0.169],["DISC1",0.065,0.0,0,10867,65.45,1,0.107,0.064],["CNTNAP2",0.0048,0.0,0,17778,43.48,1,0.001,0.005],["EIF3G",2.2208,0.0,0,535,98.3,1,3.509,2.187],["PSMB1",2.3814,0.0,0,485,98.46,2,1.991,2.392],["TMOD3",1.093,0.0,0,1171,96.28,1,1.205,1.09],["JSRP1",0.0044,0.0,0,18007,42.75,1,0.003,0.004],["BCO1",0.0051,0.0,0,17615,43.99,1,0.0,0.005],["AGFG1",0.3619,0.0,0,3834,87.81,1,0.345,0.362],["ATP6V0E1",2.1173,0.0,0,563,98.21,1,2.109,2.118],["SNX6",0.9427,0.0,0,1387,95.59,1,1.001,0.941],["CIMAP3",0.2265,0.0,0,5691,81.91,1,0.004,0.232],["FMO5",0.0334,0.0,0,12875,59.07,1,0.003,0.034],["MRPS6",1.1936,0.0,0,1055,96.65,1,1.252,1.192],["CCDC51",0.0912,0.0,0,9597,69.49,1,0.037,0.093],["PSMA7",3.1086,0.0,0,364,98.85,3,2.314,3.13],["PCBP1",2.168,0.0,0,549,98.26,1,1.578,2.184],["OBI1-AS1",0.0008,0.0,0,22757,27.64,1,0.0,0.001],["NELFB",0.2375,0.0,0,5478,82.59,1,0.206,0.238],["LIMASI",0.0132,0.0,0,15235,51.56,2,0.0,0.014],["HS6ST3",0.0759,0.0,0,10313,67.21,1,0.001,0.078],["OOEP",0.0745,0.0,0,10380,67.0,1,0.006,0.076],["PCBP2",2.3478,0.0,0,495,98.43,1,1.63,2.367],["CSNK2B",1.1661,0.0,0,1089,96.54,1,1.025,1.17],["EVA1B",0.7823,0.0,0,1681,94.66,1,0.377,0.793],["LINC01756",0.0001,0.0,0,28900,8.11,1,0.0,0.0],["PSMA3-AS1",0.4596,0.0,0,3008,90.44,1,0.92,0.448],["SOD3",3.7889,0.0,0,306,99.03,1,0.001,3.889],["TRMT5",0.091,0.0,0,9611,69.44,1,0.034,0.092],["DMD",1.0084,0.0,0,1282,95.93,1,0.005,1.035],["SLC35F1",1.2207,0.0,0,1034,96.72,1,0.033,1.252],["ATP5MC3",2.3173,0.0,0,506,98.39,1,2.259,2.319],["RPL39",23.9104,0.0,0,65,99.8,1,19.514,24.027],["GLYR1",0.3057,0.0,0,4484,85.75,1,0.301,0.306],["TESK2",0.0849,0.0,0,9872,68.61,1,0.047,0.086],["DENND5A",0.2987,0.0,0,4555,85.52,1,0.053,0.305],["THSD4",0.3558,0.0,0,3893,87.62,1,0.0,0.365],["ORC3",0.1642,0.0,0,7126,77.34,1,0.177,0.164],["PPP4R4",0.0032,0.0,0,18889,39.94,1,0.0,0.003],["EPB41",0.1828,0.0,0,6647,78.87,1,0.785,0.167],["TSTD3",0.1368,0.0,0,7904,74.87,1,0.059,0.139],["CDC42EP3",0.5052,0.0,0,2724,91.34,1,0.237,0.512],["FKBP2",0.1436,0.0,0,7703,75.51,1,0.097,0.145],["LHFPL2",0.1897,0.0,0,6485,79.38,1,0.009,0.195],["RTRAF",1.3427,0.0,0,935,97.03,1,0.995,1.352],["MGST3",4.2517,0.0,0,280,99.11,2,0.826,4.342],["RPL7A",26.854,0.0,0,55,99.83,3,18.348,27.079],["ZYG11B",0.2643,0.0,0,5056,83.93,1,0.02,0.271],["RABAC1",2.7321,0.0,0,415,98.68,1,2.487,2.739],["CDKN1C",1.3138,0.0,0,958,96.96,1,0.062,1.347],["ZFP36L2",5.3052,0.0,0,232,99.27,1,29.323,4.67],["IGLC3",0.6194,0.0,0,2179,93.07,1,0.109,0.633],["BPNT1",0.0885,0.0,0,9733,69.06,1,0.089,0.088],["RPSA",9.6051,0.0,0,148,99.53,1,10.638,9.578],["LINC02422",0.019,0.0,0,14321,54.47,1,0.023,0.019],["ANKRD26",0.2004,0.0,0,6252,80.12,1,0.12,0.203],["NEXN",1.9286,0.0,0,616,98.04,1,0.049,1.978],["TPD52",0.1828,0.0,0,6649,78.86,1,0.397,0.177],["LINC02006",0.0006,0.0,0,23383,25.65,1,0.0,0.001],["BDNF-AS",0.048,0.0,0,11857,62.3,1,0.015,0.049],["CDC37",1.3811,0.0,0,898,97.15,1,1.302,1.383],["ITM2A",1.1815,0.0,0,1070,96.6,1,2.364,1.15],["SEC11A",1.9738,0.0,0,604,98.08,1,1.99,1.973],["SMIM22",0.4128,0.0,0,3369,89.29,1,0.004,0.424],["SRSF3",3.4687,0.0,0,334,98.94,1,4.074,3.453],["ALOX5AP",0.3098,0.0,0,4427,85.93,1,1.687,0.273],["IL1RN",0.2196,0.0,0,5830,81.47,1,0.039,0.224],["EID1",4.3218,0.0,0,274,99.13,1,1.991,4.383],["CCR7",0.0659,0.0,0,10818,65.61,1,0.017,0.067],["LINC03007",0.0205,0.0,0,14123,55.1,1,0.0,0.021],["BBLN",1.5335,0.0,0,799,97.46,2,1.902,1.524],["GTF2F2",0.3401,0.0,0,4069,87.07,1,0.345,0.34],["ITIH6",0.0002,0.0,0,26823,14.72,1,0.0,0.0],["DLGAP4",0.4336,0.0,0,3194,89.85,1,0.373,0.435],["DVL2",0.1112,0.0,0,8791,72.05,1,0.069,0.112],["GLP2R",0.001,0.0,0,22075,29.81,1,0.0,0.001],["MAPKAPK2",0.4996,0.0,0,2757,91.24,1,0.457,0.501],["PACS2",0.1824,0.0,0,6667,78.8,1,0.092,0.185],["TFB2M",0.0917,0.0,0,9568,69.58,1,0.086,0.092],["EXOC6B",0.2619,0.0,0,5097,83.8,1,0.055,0.267],["LINC00174",0.0638,0.0,0,10929,65.25,1,0.124,0.062],["A2M-AS1",0.0295,0.0,0,13191,58.06,1,0.03,0.029],["POC5",0.0676,0.0,0,10722,65.91,1,0.095,0.067],["TMEM190",0.2312,0.0,0,5607,82.17,1,0.006,0.237],["RGPD1",0.0009,0.0,0,22444,28.64,1,0.002,0.001],["LINC00276",0.0015,0.0,0,20941,33.42,1,0.0,0.002],["TAPT1-AS1",0.025,0.0,0,13612,56.72,1,0.003,0.025],["RPL37A-DT",0.0044,0.0,0,17968,42.87,1,0.0,0.004],["XCL2",0.3626,0.0,0,3827,87.83,1,9.451,0.122],["RPL31",8.3784,0.0,0,160,99.49,1,9.041,8.361],["RPL13A",21.7189,0.0,0,84,99.74,1,20.013,21.764],["NBDY",0.8222,0.0,0,1586,94.96,1,0.747,0.824],["STAG2",0.8076,0.0,0,1617,94.86,1,1.36,0.793],["FCGRT",1.6349,0.0,0,752,97.61,1,0.041,1.677],["CD24",1.6973,0.0,0,720,97.71,1,0.061,1.74]];
+const el=document.getElementById('ex-plot'); if(!el) return;
+const W=980,H=530,L=70,R=24,T=24,B=86, ns='http://www.w3.org/2000/svg';
+const xs=v=>L+(Math.log10(v+0.01)+2)/(Math.log10(1000)+2)*(W-L-R);
+const ymax=3.2;
+const ys=v=>H-B-Math.sqrt(v/ymax)*(H-T-B);
+const css=getComputedStyle(document.documentElement);
+let s=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;font-family:JetBrains Mono,monospace" role="img" aria-label="gene importance against gene expression">`;
+[0.01,0.1,1,10,100,1000].forEach(t=>{const x=xs(t);s+=`<line x1="${x}" x2="${x}" y1="${T}" y2="${H-B}" stroke="var(--line)"/><text x="${x}" y="${H-B+18}" text-anchor="middle" font-size="12" fill="var(--soft)">${t>=1?t.toLocaleString():t}</text>`});
+[0,0.05,0.25,0.5,1,2,3].forEach(v=>{const y=ys(v);s+=`<line x1="${L}" x2="${W-R}" y1="${y}" y2="${y}" stroke="var(--line)"/><text x="${L-8}" y="${y+4}" text-anchor="end" font-size="12" fill="var(--soft)">${v}</text>`});
+s+=`<text x="${(L+W-R)/2}" y="${H-B+42}" text-anchor="middle" font-size="13" fill="var(--soft)">gene expression: mean counts per 10,000 in uterus cells (log scale)</text>`;
+s+=`<text transform="translate(18 ${(T+H-B)/2}) rotate(-90)" text-anchor="middle" font-size="13" fill="var(--soft)">gene importance for NK (square-root scale)</text>`;
+const col=d=>d>0?'#B5532F':d<0?'#2E6DA4':'#9AA3A0';
+const ord=[...G].sort((a,b)=>(a[3]?1:0)-(b[3]?1:0)||a[2]-b[2]);
+ord.forEach(g=>{s+=`<circle cx="${xs(g[1]).toFixed(1)}" cy="${ys(g[2]).toFixed(1)}" r="${g[3]?5:3}" fill="${col(g[3])}" fill-opacity="${g[3]?0.85:0.35}" stroke="var(--panel)" stroke-width="1"><title>${g[0]}: importance ${g[2].toFixed(3)}, mean ${g[1]} per 10,000 (NK ${g[7]}, other ${g[8]}), expression rank ${g[4].toLocaleString()} (percentile ${g[5]}), ${g[6]} sequences</title></circle>`});
+const top=[...G].filter(g=>g[3]).sort((a,b)=>b[2]-a[2]).slice(0,10);
+const placed=[];
+top.forEach((g,i)=>{const px=xs(g[1]),py=ys(g[2]);let x=px+(i%2?-14:14),y=py-10;
+ while(placed.some(p=>Math.abs(p[0]-x)<64&&Math.abs(p[1]-y)<15))y-=15;placed.push([x,y]);
+ s+=`<line x1="${px}" y1="${py}" x2="${x}" y2="${y-4}" stroke="var(--faint)" stroke-width="1"/><text x="${x+(i%2?-2:2)}" y="${y}" text-anchor="${i%2?'end':'start'}" font-size="13" font-weight="600" fill="var(--ink)">${g[0]}</text>`});
+[[1,'higher score for NK'],[-1,'lower score for NK'],[0,'chosen, no gene weight for NK']].forEach(([d,t],k)=>{const x=L+150+k*230;s+=`<circle cx="${x}" cy="${H-14}" r="5" fill="${col(d)}"/><text x="${x+10}" y="${H-10}" font-size="13" fill="var(--soft)">${t}</text>`});
+s+='</svg>';el.innerHTML=s;
+void [[1,'higher score for NK'],[-1,'lower score for NK'],[0,'chosen, no gene weight for NK']].map(([d,t])=>`<span style="margin-right:18px;font-size:13px;color:var(--soft)"><span style="display:inline-block;width:11px;height:11px;border-radius:50%;background:${col(d)};vertical-align:-1px;margin-right:6px"></span>${t}</span>`).join('');
+})();
+</script>
+
+<div class="p3foot">
+  <div class="cols">
+    <div>
+      <h4>Method</h4>
+      <dl class="p3dl">
+        <dt>input</dt><dd>sequencing reads, with no reference genome needed to build the model</dd>
+        <dt>features</dt><dd>short sequences called directly on the reads (an 8-base anchor + the 31-base target after it), counted per cell</dd>
+        <dt>model</dt><dd>a multinomial elastic net that picks the features separating the cell types — a linear model</dd>
+        <dt>genes</dt><dd>added afterwards, only as labels for sequences the model already chose</dd>
+        <dt>transfer</dt><dd>a feature counts in another dataset only if that dataset contains the identical sequence; no re-fitting, no re-alignment</dd>
+        <dt>score</dt><dd>probabilities over the cell types both datasets share, one-vs-rest AUC per cell type, averaged</dd>
+      </dl>
+    
+    </div>
+    <div>
+      <h4>Limitations</h4>
+      <ul id="limits"></ul>
+    </div>
+    <div>
+      <h4>Sources</h4>
+      <ul id="cites"></ul>
+    </div>
+  </div>
+  <div style="margin-top:26px">
+    <h4>Provenance</h4>
+    <div class="prov" id="prov"></div>
+  </div>
+</div>
+</div>
+<script src="p3index.js"></script>
+<script>(function(){var g=window.__VG;if(window.P3I&&g){window.P3I.grids=window.P3I.grids.filter(function(x){return x.key===g;});}document.body.className='only-'+window.__VT;})();</script>
+<script src="p3markers.js"></script>
+<script src="p3.js"></script>
+<script>(function(){var q={};(location.hash||'').slice(1).split('&').slice(2).forEach(function(kv){var i=kv.indexOf('=');if(i>0)q[kv.slice(0,i)]=decodeURIComponent(kv.slice(i+1));});
+var order=[['gc-train','train'],['gc-test','test'],['gc-cls','cls'],['br-donor','train']],n=0;
+(function tick(){var done=true;order.forEach(function(o){var el=document.getElementById(o[0]),v=q[o[1]];if(!v||!el)return;
+ var opt=[].filter.call(el.options,function(x){return x.value===v||x.value.slice(-v.length-1)===':'+v;})[0];
+ if(!opt){done=false;return;} if(el.value===opt.value)return;
+ el.value=opt.value; el.dispatchEvent(new Event('change',{bubbles:true})); done=false;});
+ if(done&&q.gene&&!q._g){var els=[].filter.call(document.querySelectorAll('#s-browser *'),function(e){return e.children.length===0&&e.textContent.trim()===q.gene;});
+  if(els.length){var c=els[0];while(c&&c!==document.body&&!(c.onclick||c.tagName==='BUTTON'||c.tagName==='LI'||c.getAttribute('role')==='button'||c.getAttribute('data-gene')))c=c.parentNode; (c&&c!==document.body?c:els[0]).click(); q._g=1;} else done=false;}
+ if(!done&&n++<60)setTimeout(tick,250);})();})();</script>
+<style>.seq39,.brseq .cp{display:none!important}</style><script>(function(){var re=/[ACGTN][ACGTN·\.\s]{13,}[ACGTN]/g;function fix(n){if(n.nodeType===3){if(/[ACGTN]{12}/.test(n.nodeValue.replace(/[·.\s]/g,'')))n.nodeValue=n.nodeValue.replace(re,'(sequence not shown)');return;}
+if(n.nodeType===1&&!/^(SCRIPT|STYLE)$/.test(n.tagName))for(var c=n.firstChild;c;c=c.nextSibling)fix(c);}
+new MutationObserver(function(ms){ms.forEach(function(m){m.addedNodes.forEach(fix);if(m.type==='characterData')fix(m.target);});}).observe(document.body,{childList:true,subtree:true,characterData:true});fix(document.body);})();</script></body></html>

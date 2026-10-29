@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Static p2single Highlights export (generated, not site source)
+    "public/highlights/**",
   ]),
 ]);
 
