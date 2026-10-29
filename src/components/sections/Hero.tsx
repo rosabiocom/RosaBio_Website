@@ -37,7 +37,7 @@ export function Hero() {
   return (
     <section
       id="home"
-      className="relative flex min-h-screen items-center justify-center overflow-hidden bg-navy-darkest"
+      className="relative flex min-h-screen items-center justify-center overflow-hidden bg-navy-darkest pb-16 pt-28"
     >
       {/* Particles Background */}
       <div className="absolute inset-0">
