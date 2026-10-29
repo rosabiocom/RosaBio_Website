@@ -37,7 +37,7 @@
       .map(r => r.value_weight_mapped_pct_aligned).filter(x => x !== null && x !== undefined);
     if (!v.length) return 'most';
     const lo = Math.min.apply(null, v), hi = Math.max.apply(null, v);
-    return lo.toFixed(0) === hi.toFixed(0) ? `${lo.toFixed(0)}%` : `${lo.toFixed(0)}\u2013${hi.toFixed(0)}%`;
+    return lo.toFixed(0) === hi.toFixed(0) ? `${lo.toFixed(0)}%` : `${lo.toFixed(0)} to ${hi.toFixed(0)}%`;
   }
   /* B is the CURRENT grid's browser payload. Kept per grid on purpose: two pools are both named
      "human value features only (wv>0)", so merging every grid's species_summary would cross them. */
@@ -79,6 +79,15 @@
   const ISOG = gk => (window.P3ISO || {})[gk] || null;
   const BLG = gk => (window.P3BL || {})[gk] || null;
   const UNG = gk => (window.P3UN || {})[gk] || null;
+  /* which genome each species is placed on, and how many of its selected sequences place, from the data (2026-10-29 audit) */
+  const GENOMESAY = () => {
+    const U = UNG(CUR) || {}, by = {};
+    Object.keys(U).forEach(k => { const mm = modelBy[k]; if (!mm) return; const sp = mm.species === 'macaque' ? 'macaque' : 'human';
+      by[sp] = by[sp] || [0, 0]; by[sp][0] += U[k].placed || 0; by[sp][1] += U[k].sel || 0; });
+    const NAME = { human: 'Human donors', macaque: 'Macaque donors (rhesus and pig-tailed)' };
+    return '<b>Each donor is placed on its own species genome.</b> ' + ['human', 'macaque'].filter(sp => by[sp]).map(sp =>
+      `${NAME[sp]}: ${SPMETA[sp].asm} (${SPMETA[sp].annot}); ${pct0(by[sp][0], by[sp][1])}% of their selected sequences place (${int(by[sp][0])} of ${int(by[sp][1])}).`).join(' ');
+  };
   function ensureTrackExtras(gk, cb) {
     const f = IDX.files[gk] || {};
     let left = 0, done = () => { if (--left <= 0) cb(); };
@@ -98,8 +107,8 @@
     'br-sum', 'br-list', 'br-tracks', 'br-note'];
 
   /* ================= helpers (reference page _js1) ================= */
-  const fmt = (v, n = 3) => (v === null || v === undefined || Number.isNaN(v)) ? '—' : Number(v).toFixed(n);
-  const int = v => (v === null || v === undefined) ? '—' : Number(v).toLocaleString('en-US');
+  const fmt = (v, n = 3) => (v === null || v === undefined || Number.isNaN(v)) ? 'not recorded' : Number(v).toFixed(n);
+  const int = v => (v === null || v === undefined) ? 'not recorded' : Number(v).toLocaleString('en-US');
   const esc = s => String(s === null || s === undefined ? '' : s)
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   const pct0 = (a, b) => (100 * a / Math.max(1, b)).toFixed(0);
@@ -180,7 +189,7 @@
   IDX.grids.forEach(g => { GRIDNAME[g.key] = g.page_title; GRIDSHORT[g.key] = g.short; });
   const SPMETA = {
     human: { asm: 'GRCh38', annot: 'GENCODE v50', genome: 'These are human datasets on the human genome, so a placement means what it says.' },
-    macaque: { asm: 'Macaca fascicularis 6.0', annot: 'Ensembl 112', genome: 'These are rhesus and pig-tailed macaque datasets aligned to the M. fascicularis genome; only a minority of selected sequences place, so most sit in the BLAST panel below.' }
+    macaque: { asm: 'Macaca fascicularis 6.0', annot: 'Ensembl 112', genome: 'These are rhesus and pig-tailed macaque datasets aligned to the M. fascicularis genome; only a minority of selected sequences place, so most are in the BLAST panel below.' }
   };
   let _brSp = 'human';                       /* set per rendered donor from its genes' ref */
   const gASM = () => (SPMETA[_brSp] || SPMETA.human).asm;
@@ -207,7 +216,7 @@
     else if (m.grid === 'PANC') t = m.ds === 'seg' ? 'Segerstolpe' : m.ds === 'xin' ? 'Xin' : m.label;
     TAG[m.id] = t;
   });
-  const label = d => `${TAG[d]} — ${GRIDSHORT[modelBy[d].grid]} (${modelBy[d].species})`;
+  const label = d => `${TAG[d]}, ${GRIDSHORT[modelBy[d].grid]} (${modelBy[d].species})`;
   const pairOf = (m, t) => {
     const a = modelBy[m], b = modelBy[t];
     return a && b && a.grid === b.grid ? (D.pairs[a.ds + '__' + b.ds] || null) : null;
@@ -244,7 +253,8 @@
       ? `${a.tissue} → ${b.tissue}, two tissues on ${ARM[a.arm]}`
       : `same tissue, ${ARM[a.arm]} → ${ARM[b.arm]}`;
     if (a.grid === 'MCX') return `${TAG[m]} → ${TAG[t]}, two tissue atlases`;
-    return `${TAG[m]} → ${TAG[t]}, two independent islet studies`;
+    if (a.grid === 'PANC') return `${TAG[m]} → ${TAG[t]}, two independent islet studies`;
+    return `${TAG[m]} → ${TAG[t]}, a donor model tested on another donor`;
   }
   const clsName = c => String(c).replace(/_/g, ' ');
   const clsShort = c => {
@@ -261,8 +271,8 @@
   function fillCls(sel, P) {
     const prev = sel.value === '' || sel.value === undefined ? '-1' : sel.value;
     const prevName = +prev >= 0 && sel.dataset.names ? JSON.parse(sel.dataset.names)[+prev] : null;
-    sel.innerHTML = `<option value="-1">macro AUC — all ${P.shared.length} shared cell types</option>` +
-      P.shared.map((c, i) => `<option value="${i}">${esc(clsName(c))} — one-vs-rest AUC</option>`).join('');
+    sel.innerHTML = `<option value="-1">macro AUC, all ${P.shared.length} shared cell types</option>` +
+      P.shared.map((c, i) => `<option value="${i}">${esc(clsName(c))}, one-vs-rest AUC</option>`).join('');
     sel.dataset.names = JSON.stringify(P.shared);
     const keep = prevName !== null ? P.shared.indexOf(prevName) : -1;
     sel.value = String(keep);
@@ -322,11 +332,11 @@
     const ids = Object.keys(S).filter(id => used.has(id));
     const un = unsourcedFor(grid, tissue, classes);
     const where = tissue ? `${GRIDSHORT[grid]}, ${tissue}` : GRIDSHORT[grid];
-    if (!ids.length && !un.length) return `<b>Marker genes: sources.</b> ${esc(MK._status || `the cited marker table lists no genes for these cell types (${where})`)}.`;
+    if (!ids.length && !un.length) return '';
     return `<b>Marker genes: sources</b> (${esc(where)}; the cited table, one source per gene).<br>` + ids.map(id => {
       const s = S[id] || {};
-      return `<span class="mono">[${esc(id)}]</span> ${esc(s.citation || id)}` +
-        (s.doi_or_url ? ` — ${linksOf(s.doi_or_url)}` : '') +
+      return `<span class="mono">[${esc(id)}]</span> ${esc(String(s.citation || id).replace(/\s*\u2014\s*/g, ': '))}` +
+        (s.doi_or_url ? ` · ${linksOf(s.doi_or_url)}` : '') +
         (s.what_it_is || s.where_in_it ? ` <span class="dim">(${esc([s.what_it_is, s.where_in_it].filter(Boolean).join(' '))})</span>` : '');
     }).join('<br>') +
       (un.length ? `<br>No cited marker for ${un.map(u => `<b>${esc(clsName(u.cell_type))}</b>${u.tissue ? ' (' + esc(u.tissue) + ')' : ''}: ${esc(u.reason)}`).join('; ')}` : '');
@@ -356,11 +366,11 @@
          that has cut-offs, so the first load starts on B rather than "no restriction" */
       const isP = hasChem(grid()), v = famSel.value || 'present';
       famSel.innerHTML =
-        `<option value="all">no restriction — use the whole model</option>` +
-        `<option value="present">B — the sequence APPEARS in the grid's datasets</option>` +
-        `<option value="picked">A — the sequence was PICKED by the grid's models</option>` +
-        `<option value="test">C — the sequence APPEARS in the tested dataset</option>` +
-        (isP ? `<option value="other">D — the sequence APPEARS in the other chemistry</option>` : '');
+        `<option value="all">no restriction: use the whole model</option>` +
+        `<option value="present">B: the sequence APPEARS in the grid's datasets</option>` +
+        `<option value="picked">A: the sequence was PICKED by the grid's models</option>` +
+        `<option value="test">C: the sequence APPEARS in the tested dataset</option>` +
+        (isP ? `<option value="other">D: the sequence APPEARS in the other chemistry</option>` : '');
       famSel.value = (v === 'other' && !isP) ? 'all' : v;
     }
     function fillK() {
@@ -374,7 +384,7 @@
         const prev = +kSel.value, ks = KS()[fam] || [];
         const N = fam === 'present' ? XS().n_datasets : XS().n_models, unit = fam === 'present' ? 'dataset' : 'model';
         kSel.innerHTML = ks.map(k =>
-          `<option value="${k}">${k} ${unit}${k > 1 ? 's' : ''}${k === N ? ' — all of them' : ''}</option>`).join('');
+          `<option value="${k}">${k} ${unit}${k > 1 ? 's' : ''}${k === N ? ' (all of them)' : ''}</option>`).join('');
         kSel.value = String(ks.indexOf(prev) >= 0 ? prev : ks[0]);
       }
     }
@@ -395,19 +405,10 @@
       const opts = {
         present: `<b>B</b> · the sequence appears in at least K of the ${int(S.n_datasets)} ${esc(gs)} datasets (${int(S.present_ge2)} features at K = 2)`,
         picked: `<b>A</b> · at least K of the ${int(S.n_models)} ${esc(gs)} models picked it (${int(S.picked_ge2)} of ${int(S.n_features)} features at K = 2; ${(100 * S.frac_private).toFixed(0)}% are picked by one model only)`,
-        test: `<b>C</b> · the sequence appears in the tested dataset — anything else can never fire there`,
+        test: `<b>C</b> · the sequence appears in the tested dataset; anything else can never fire there`,
         other: `<b>D</b> · the sequence appears in the other chemistry (PBMC only)`,
       };
-      $('ex-howto').innerHTML = '<span class="rk">how to read this</span>' + dl([
-        ['shows', 'how the model from \u201ctrained dataset\u201d scores on the tested dataset as its features are added, strongest first'],
-        ['x axis', 'number of features used'],
-        ['y axis', 'score on the tested dataset: macro AUC over the shared cell types, or one cell type (menu “score”)'],
-        ['a feature', 'a short sequence (8-base anchor + 31-base target), or an anchor alone (any read there or not)'],
-        ['look for', 'a curve that rises fast and levels off high: the signal sits in a few features that also exist in the tested dataset'],
-        ['“common” (menus 3–4)', fam === 'all'
-          ? bul([opts.picked, opts.present, opts.test, hasChem(grid()) ? opts.other : ''])
-          : bul([opts[fam]])],
-      ]);
+      $('ex-howto').innerHTML = '';
     }
 
     function curve(m, t, f) {
@@ -437,7 +438,7 @@
         const box = $('ex-chart'); box.innerHTML = '';
         const sv = svg(W, 160); sv.style.width = '100%';
         sv.appendChild(E('text', { x: W / 2, y: 80, class: 'axtitle', 'text-anchor': 'middle',
-          fill: 'var(--warn)' }, 'No features survive this restriction for this model — try a lower K.'));
+          fill: 'var(--warn)' }, 'No features survive this restriction for this model. Try a lower K.'));
         box.appendChild(sv);
         $('ex-leg').innerHTML = '';
         $('ex-sum').innerHTML = '';
@@ -492,7 +493,7 @@
       });
       s.appendChild(E('line', { x1: ML, x2: W - MR, y1: H - MB, y2: H - MB, class: 'ax' }));
       s.appendChild(E('text', { x: (ML + W - MR) / 2, y: H - 10, class: 'axtitle', 'text-anchor': 'middle' },
-        'k — features used, largest weight first  (log scale)'));
+        'k: features used, largest weight first  (log scale)'));
       s.appendChild(E('text', { x: 14, y: (MT + H - MB) / 2, class: 'axtitle', 'text-anchor': 'middle',
         transform: `rotate(-90 14 ${(MT + H - MB) / 2})` }, `${clsTxt} on ${TAG[t]}'s cells`));
       if (self) s.appendChild(E('text', { x: ML + 8, y: MT + 14, class: 'axlab', fill: 'var(--warn)' },
@@ -506,10 +507,10 @@
       if (c0) for (const p of c0.points) { if (p.auc >= 0.9) { k90 = p.k; break; } }
       $('ex-sum').innerHTML = [
         [esc(TAG[m]), 'trained dataset'], [esc(TAG[t]), 'tested dataset'],
-        [c0 ? int(c0.K) : '—', 'features in the model'],
-        [c0 ? int(c0.fired) : '—', `fire in ${esc(TAG[t])}`],
-        [full ? fmt(full.auc, 4) : '—', self ? 'in-sample AUC' : (cls < 0 ? 'transfer AUC' : `${esc(clsShort(P.shared[cls]))} AUC`)],
-        [k90 ? int(k90) : '—', 'features to reach 0.90'],
+        [c0 ? int(c0.K) : 'none', 'features in the model'],
+        [c0 ? int(c0.fired) : 'none', `fire in ${esc(TAG[t])}`],
+        [full ? fmt(full.auc, 4) : 'none', self ? 'in-sample AUC' : (cls < 0 ? 'transfer AUC' : `${esc(clsShort(P.shared[cls]))} AUC`)],
+        [k90 ? int(k90) : 'never', 'features to reach 0.90'],
       ].map(([v, k]) => `<div><div class="k">${k}</div><div class="v">${v}</div></div>`).join('');
 
       const endAll = P.curves.all.points[P.curves.all.points.length - 1];
@@ -517,8 +518,8 @@
       $('ex-note').innerHTML = c0 ? dl([
         ['pair', `<b>${esc(label(m))}</b> → <b>${esc(label(t))}</b> · ${esc(kindOf(m, t))}`],
         ['cell types scored', `${P.shared.length}: ${esc(shared)} cells`],
-        ['features that fire', self ? '' : `<b>${int(P.curves.all.fired)}</b> of ${int(P.curves.all.K)} (${pct0(P.curves.all.fired, P.curves.all.K)}%) — the rest never appear in ${esc(TAG[t])}, so they cannot help`],
-        ['whole-model score', `<b>${fmt(endAll[1], 4)}</b> macro AUC · macro F1 ${fmt(endAll[2], 4)} — the whole-model score for this pair`],
+        ['features that fire', self ? '' : `<b>${int(P.curves.all.fired)}</b> of ${int(P.curves.all.K)} (${pct0(P.curves.all.fired, P.curves.all.K)}%); the rest never appear in ${esc(TAG[t])}, so they cannot help`],
+        ['whole-model score', `<b>${fmt(endAll[1], 4)}</b> macro AUC · macro F1 ${fmt(endAll[2], 4)}, the whole-model score for this pair`],
         ['reaches 0.90 at', k90 ? `<b>${int(k90)}</b> features (${esc(clsTxt)})` : 'never'],
         ['filter on', famSel.value !== 'all' ? `only features that ${esc(famLabel(fid()))}: ${int(c0.K)} of ${int(P.curves.all.K)}, ${(100 * (c0.wshare || 0)).toFixed(0)}% of the model's weight` : ''],
         ['note', self ? 'in-sample: the model is scoring its own training cells, so this is a ceiling, not a result' : ''],
@@ -605,7 +606,7 @@
       fired: r[3], wv: r[4], vec: Object.prototype.hasOwnProperty.call(L.vectors, r[0]) ? L.vectors[r[0]] : undefined }));
     const ol = L.other_live;
     if (ol && ol.nfeat) rows.push({ key: 'b:__other_genes__', bucket: true, short: `genes #${NV + 1}+`,
-      gene: `genes #${NV + 1}–${int(all.length)}, together`, ord: NV + 0.5, rank: '·', norm: ol.norm,
+      gene: `genes #${NV + 1} to ${int(all.length)}, together`, ord: NV + 0.5, rank: '·', norm: ol.norm,
       nfeat: ol.nfeat, fired: ol.fired, wv: ol.w, vec: L.vectors.__other_genes__ });
     [['__unmapped_seq__', 'no gene name'], ['__unmapped_anchor__', 'anchor, no name']].forEach(([s, short], j) => {
       const c = (P.genes.special || {})[s];
@@ -638,15 +639,7 @@
     fillTests(defTest(CUR));
     const pair = () => pairOf(trSel.value, teSel.value);
 
-    $('gc-howto').innerHTML = '<span class="rk">how to read this</span>' + dl([
-        ['shows', 'the model from \u201ctrained dataset\u201d, its sequences grouped by gene, and how much of the score each gene carries on the dataset in \u201ctested dataset\u201d'],
-        ['left list', 'every gene the model uses. Bar = the gene’s weight. On macro score, colour = the cell type it favours most; with one cell type picked, blue = favours it, red = against it'],
-        ['right chart', 'the score rebuilt from only the ticked genes, strongest first, on a fixed sample of the tested cells'],
-        ['greyed genes', 'none of their sequences appear in the tested dataset, so ticking them adds nothing'],
-        ['last rows', 'sequences with no gene name, and the genes beyond the top ones — tick everything to rebuild the whole model'],
-        ['amber line', 'the whole model on every test cell'],
-        ['try', '“top 10” or “markers”: do a few named genes carry most of the score?'],
-      ]);
+    $('gc-howto').innerHTML = '';
 
   let checked = new Set();
 
@@ -673,8 +666,8 @@
       const tissue = modelBy[m].tissue || null;
       const why = markerBlock(grid, tissue, P.shared);
       mkBtn.disabled = !!why;
-      mkBtn.title = why ? `markers unavailable: ${why}` : `check the genes the cited table lists for this pair's ${P.shared.length} cell types`;
-      $('gc-mk-why').textContent = why ? `markers unavailable — ${why}` : '';
+      mkBtn.title = why ? 'no cited marker list for these cell types' : `check the genes the cited table lists for this pair's ${P.shared.length} cell types`;
+      $('gc-mk-why').textContent = '';
       $('gc-mksrc').innerHTML = markerSources(grid, tissue, P.shared);
 
       /* ---- left: the full gene list, checkboxes ---- */
@@ -693,7 +686,7 @@
         const wv = wOf(r);
         return `<label class="gitem" data-g="${esc(r.key)}"
             style="${dead ? 'opacity:.5' : ''}${hasVec ? '' : ';border-left:2px dashed var(--ink-3)'}${r.bucket ? ';font-style:italic' : ''}"
-            title="${hasVec ? (r.bucket ? `${int(r.nfeat)} features carried together` : '') : `no live data — outside the top ${NV} genes by weight; checking this changes nothing on the curve (its contribution is inside the “genes #${NV + 1}+” row)`}">
+            title="${hasVec ? (r.bucket ? `${int(r.nfeat)} features counted together` : '') : `no live data: outside the top ${NV} genes by weight; checking this changes nothing on the curve (its contribution is inside the “genes #${NV + 1}+” row)`}">
           <input type="checkbox" data-g="${esc(r.key)}" ${checked.has(r.key) ? 'checked' : ''}
             ${hasVec ? '' : 'style="opacity:.35"'}>
           <span class="dim" style="width:30px;text-align:right">${r.rank}</span>
@@ -730,8 +723,8 @@
           [`${int(nFire)}`, `fire in ${esc(TAG[t])}`],
           [int(L.n), 'cells sampled (live curve)'],
           [pickedCapped ? `${pickedCapped} of ${picked.length}` : '0', 'checked but no live data'],
-          [finalAuc === null ? '—' : fmt(finalAuc, 3), cls < 0 ? 'macro AUC, checked rows' : `${esc(clsShort(P.shared[cls]))} AUC, checked`],
-          [ref === null || ref === undefined ? '—' : fmt(ref, 3), 'full model (ref. line)'],
+          [finalAuc === null ? 'none' : fmt(finalAuc, 3), cls < 0 ? 'macro AUC, checked rows' : `${esc(clsShort(P.shared[cls]))} AUC, checked`],
+          [ref === null || ref === undefined ? 'not recorded' : fmt(ref, 3), 'full model (ref. line)'],
         ].map(([v, k]) => `<div><div class="k">${k}</div><div class="v">${v}</div></div>`).join('');
 
         /* ---- right: LIVE cumulative AUC over exactly the checked rows ---- */
@@ -777,7 +770,7 @@
         }
         s2.appendChild(E('line', { x1: ML, x2: W - MR, y1: H - MB, y2: H - MB, class: 'ax' }));
         s2.appendChild(E('text', { x: (ML + W - MR) / 2, y: H - 10, class: 'axtitle', 'text-anchor': 'middle' },
-          `checked rows with live data, strongest weight first  (${n} of ${picked.length} checked)`));
+          `checked rows with live data, largest weight first  (${n} of ${picked.length} checked)`));
         s2.appendChild(E('text', { x: 13, y: (MT + H - MB) / 2, class: 'axtitle', 'text-anchor': 'middle',
           transform: `rotate(-90 13 ${(MT + H - MB) / 2})` }, `${clsTxt} on ${TAG[t]}'s cells`));
         if (self) s2.appendChild(E('text', { x: ML + 8, y: MT + 12, class: 'axlab', fill: 'var(--warn)' },
@@ -785,30 +778,30 @@
         const box = $('gc-chart'); box.innerHTML = ''; box.appendChild(s2);
         $('gc-leg').innerHTML = (cls < 0
           ? P.shared.map((c, i) => `<span><span class="sw" style="background:${clsCol(i)}"></span>${esc(clsName(c))}</span>`).join('') +
-            `<span class="dim">bar = size of the gene's weight; colour = the cell type it pushes hardest toward</span>`
+            `<span class="dim">bar = size of the gene's weight; colour = the cell type its weight is most toward</span>`
           : `<span><span class="sw" style="background:var(--coef-pos)"></span>weight &gt; 0 → toward ${esc(clsName(P.shared[cls]))}</span>
              <span><span class="sw" style="background:var(--coef-neg)"></span>weight &lt; 0 → away from it</span>`) +
           `<span style="opacity:.5"><span class="sw" style="background:var(--ink-3)"></span>greyed = fires nothing in ${esc(TAG[t])}</span>
            <span class="dim">curve recomputed live from ${int(L.n)} sampled cells</span>`;
 
         const un = (P.genes.special || {}).__unmapped_seq__ || {}, ua = (P.genes.special || {}).__unmapped_anchor__ || {};
-        const counts = P.shared.map((c, i) => `${int(P.class_n[i])} ${clsName(c)}`).join(', ');
+        const counts = Array.isArray(P.class_n) ? P.shared.map((c, i) => `${int(P.class_n[i])} ${clsName(c)}`).join(', ') : '';
         const subCounts = P.shared.map((c, i) => L.y.filter(v => v === i).length);
         $('gc-note').innerHTML = dl([
           ['pair', `<b>${esc(label(m))}</b> → <b>${esc(label(t))}</b> · ${esc(kindOf(m, t))}`],
           ['features', `${int(P.n_units)}: ${int(P.n_value_units)} sequences + ${int(P.n_anchor_units)} anchor terms`],
           ['genes', `<b>${int(GR.n_genes)}</b> named genes, plus ${int(un.nfeat || 0)} sequences and ${int(ua.nfeat || 0)} anchor terms with no gene name`],
           ['genes that fire', `<b>${int(nFire)}</b> of ${int(GR.n_genes)} have a feature present in ${esc(TAG[t])}; the other ${int(GR.n_genes - nFire)} are greyed`],
-          ['everything ticked', `<b>${fmt(L.auc_sub_exact, 4)}</b> macro AUC on the sample — each feature counts toward one gene only, so the rows add up to the whole model`],
-          ['sample', `${int(L.n)} of ${int(P.n_cells)} test cells, each cell type kept in proportion (full: ${esc(counts)}; sample: ${subCounts.join(' / ')})`],
-          ['live data', `the top <b>${int(NV)}</b> genes each; genes #${int(NV + 1)}–${int(GR.n_genes)} share one row (to keep the page small)`],
+          ['everything ticked', `<b>${fmt(L.auc_sub_exact, 4)}</b> macro AUC on the sample; each feature counts toward one gene only, so the rows add up to the whole model`],
+          ['sample', `${int(L.n)} of ${int(P.n_cells)} test cells, each cell type kept in proportion (${Array.isArray(P.class_n) ? `full: ${esc(counts)}; ` : ''}sample: ${subCounts.join(' / ')})`],
+          ['live data', `the top <b>${int(NV)}</b> genes each; genes #${int(NV + 1)} to ${int(GR.n_genes)} share one row (to keep the page small)`],
           ['note', self ? 'in-sample: the model is scoring its own training cells, so this is a ceiling, not a result' : ''],
         ]);
 
         const fs = D.grids[grid].f_sign || {};
         $('gc-caveat').innerHTML = bul([
-          `<b>Weight = f × coef</b>, one value per cell type. f is negative for ${fmt(fs.pct_f_negative, 1)}% of the ${int(fs.n_value_features)} sequences in the ${esc(GRIDSHORT[grid])} models, so the sign of coef alone points the wrong way for about half of them.`,
-          `<b>One gene per feature.</b> Each feature is credited to its strongest named gene only, so the rows add up exactly to the model.`,
+          `<b>Weight = f × coef</b>, one value per cell type.` + (typeof fs.pct_f_negative === 'number' && typeof fs.n_value_features === 'number' ? ` f is negative for ${fmt(fs.pct_f_negative, 1)}% of the ${int(fs.n_value_features)} sequences in the ${esc(GRIDSHORT[grid])} models, so the sign of coef alone gives the wrong direction for about half of them.` : ''),
+          `<b>One gene per feature.</b> Each feature is credited to one named gene only (the one with the largest weight), so the rows add up exactly to the model.`,
           `<b>Sample vs all cells.</b> The chart uses a sample (fast to redraw); the reference line uses every test cell. With every row ticked: ${fmt(L.auc_sub_exact, 4)} on the sample, ${fmt(P.full.macro_auc, 4)} on all cells.`,
         ]);
       }
@@ -901,7 +894,7 @@
     const v = Number(t);
     return isFinite(v) ? v : null;
   };
-  const FLAGLAB = { spliced: 'spliced', softclip: 'soft-clipped', mismatch: 'mismatch', clean: 'clean 39M' };
+  const FLAGLAB = { spliced: 'spliced', softclip: 'soft-clipped', mismatch: 'mismatch', clean: 'exact match' };
   function alnFlag(f) {
     if (f.sj) return 'spliced';                 /* null whenever the column is absent OR the cell says nothing */
     if ((f.cig || '').indexOf('S') >= 0) return 'softclip';
@@ -980,23 +973,23 @@
   }
   const evText = e => e.k === 'sub' ? `base ${e.pos}: genome ${e.ref} -> our ${e.our}`
     : e.k === 'del' ? `between bases ${e.after} and ${e.after + 1}: genome has ${e.b}, ours has nothing`
-    : `base${e.from === e.to ? ' ' + e.from : 's ' + e.from + '–' + e.to}: ours has ${e.b}, the genome has nothing`;
+    : `base${e.from === e.to ? ' ' + e.from : 's ' + e.from + ' to ' + e.to}: ours has ${e.b}, the genome has nothing`;
   /* the 'mismatch' row, under 'alignment'. It NEVER implies 'no mismatch' from a missing cs: a row whose edit
      distance is > 0 but whose stage-3 cell carries no cs says the per-base detail is not recorded. */
   function csText(f) {
     const seq = String(f.a || '') + String(f.t || ''), e = edNum(f), c = csEvents(f.cs, f.cig, seq);
     if (!f.cs) return (e !== null && e > 0)
-      ? `<span style="color:var(--warn)">not recorded</span> — stage 3 gives no cs for this alignment, so its ${e} mismatch${e === 1 ? '' : 'es'} cannot be placed on a base`
+      ? `<span style="color:var(--warn)">not recorded</span>: the sequence file gives no per-base detail for this alignment, so its ${e} mismatch${e === 1 ? '' : 'es'} cannot be placed on a base`
       : '';
-    if (!c) return `<span style="color:var(--warn)">not readable</span> — stage 3 gives <span class="mono">${esc(f.cs)}</span>, which is not a cs string`;
+    if (!c) return `<span style="color:var(--warn)">not readable</span>: the sequence file gives <span class="mono">${esc(f.cs)}</span>, which is not a cs string`;
     if (!c.any) {
       if (e === null || e <= 0) return '';
       const cl = clipTot(f.cig);
       return cl === e
-        ? `none inside the aligned block — the ${e} of the edit distance ${e === 1 ? 'is the soft-clipped base' : 'are the ' + e + ' soft-clipped bases'}, which the aligner never matched`
+        ? `none inside the aligned block: the ${e} of the edit distance ${e === 1 ? 'is the soft-clipped base' : 'are the ' + e + ' soft-clipped bases'}, which the aligner never matched`
         : `none recorded inside the aligned block, though the edit distance is ${e}`;
     }
-    if (c.frame === 'none') return `<span style="color:var(--warn)">cannot be placed</span> — neither reading of <span class="mono">${esc(f.cs)}</span> matches the 39-mer above`;
+    if (c.frame === 'none') return `<span style="color:var(--warn)">cannot be placed</span>: neither reading of <span class="mono">${esc(f.cs)}</span> matches the sequence`;
     return c.ev.map(evText).join(' · ')
       + (c.frame === 'both'
         ? ` · <span style="color:var(--warn)">strand not recorded</span>, so the same cs reads equally as ${c.alt.map(evText).join(' · ')}`
@@ -1010,7 +1003,7 @@
     if (c && c.frame !== 'none') c.ev.forEach(e => {
       if (e.k === 'sub') mk[e.pos] = ['mm', `base ${e.pos}: genome ${e.ref}, ours ${e.our}`];
       else if (e.k === 'ins') {
-        const w = e.from === e.to ? `base ${e.from}` : `bases ${e.from}\u2013${e.to}`;
+        const w = e.from === e.to ? `base ${e.from}` : `bases ${e.from} to ${e.to}`;
         for (let i = e.from; i <= e.to; i++) mk[i] = ['ii', `${w}: ours only, the genome has nothing here`];
       }
       else gap[e.after] = `genome has ${e.b} between bases ${e.after} and ${e.after + 1}; ours does not`;
@@ -1020,9 +1013,9 @@
     if (c && c.frame === 'both') c.alt.forEach(e => {
       const q = e.k === 'sub' ? [e.pos] : e.k === 'ins' ? Array.from({ length: e.to - e.from + 1 }, (_, i) => e.from + i) : [];
       q.forEach(i => { if (!mk[i]) mk[i] = ['mq', e.k === 'sub'
-        ? `the other reading of the same cs: base ${i}, genome ${e.ref}, ours ${e.our} — strand not recorded`
-        : `the other reading of the same cs: base ${i} is ours only — strand not recorded`]; });
-      if (e.k === 'del' && !gap[e.after]) gap[e.after] = `the other reading of the same cs: genome has ${e.b} between bases ${e.after} and ${e.after + 1} — strand not recorded`;
+        ? `the other reading of the same cs: base ${i}, genome ${e.ref}, ours ${e.our}; strand not recorded`
+        : `the other reading of the same cs: base ${i} is ours only; strand not recorded`]; });
+      if (e.k === 'del' && !gap[e.after]) gap[e.after] = `the other reading of the same cs: genome has ${e.b} between bases ${e.after} and ${e.after + 1}; strand not recorded`;
     });
     const gm = i => gap[i] ? `<i class="gapm" title="${esc(gap[i])}">▾</i>` : '';
     let out = gm(0) + '<b class="an">';
@@ -1058,7 +1051,7 @@
     const D = BLG(CUR);
     if (!D) return '';
     const e = D[String(f.a || '') + String(f.t || '')];
-    if (!e) return '<span class="dim">not searched — this sequence already aligns full length</span>';
+    if (!e) return '<span class="dim">not searched: this sequence already aligns full length</span>';
     const how = `${esc(String(e.f || '').replace('softclip', 'soft-clipped').replace('other_cigar', 'partial alignment'))}`;
     /* A GENOME hit is a locus, not a gene. "intron of Ets1" says the sequence lies inside that
        gene's span as DNA or pre-mRNA; printing it the way a transcript hit is printed would
@@ -1066,13 +1059,13 @@
        1,340 genome hits are intronic. So it reads as a position and never fills the gene slot. */
     if (!e.r && e.loc) return locText(e.loc) + ` · searched because it is ${how}` +
       ` · <span class="dim">no transcript of either species matched it</span>`;
-    if (!e.r) return `<span style="color:var(--warn)">no confident hit</span> — searched because it is ${how}` +
+    if (!e.r) return `<span style="color:var(--warn)">no confident hit</span>: searched because it is ${how}` +
       (e.why ? ` · ${esc(e.why)}` : '');
     const amb = e.ng > 1;
     return (amb
-        ? `<span style="color:var(--warn)">ambiguous</span> — the best hit is shared by <b>${int(e.ng)}</b> genes, so no gene is assigned`
+        ? `<span style="color:var(--warn)">ambiguous</span>: the best hit is shared by <b>${int(e.ng)}</b> genes, so no gene is assigned`
         : `<b>${esc(e.g)}</b>`) +
-      ` \u00b7 ${esc(e.sp)} transcript \u00b7 ${fmt(e.id, 1)}% identity over ${fmt(e.cov, 0)}% of the 39 bases` +
+      ` \u00b7 ${esc(e.sp)} transcript \u00b7 ${fmt(e.id, 1)}% identity over ${fmt(e.cov, 0)}% of the sequence` +
       ` \u00b7 ${e.o === 'minus' ? 'reverse complement of the transcript' : 'same sense as the transcript'}` +
       ` \u00b7 searched because it is ${how}`;
   }
@@ -1081,15 +1074,16 @@
      '31M8S, soft-clipped' / '39M, 0 mismatches, splicing not recorded for this dataset'. Every absent value is
      SAID; it never prints a value that could be read as a real one, and never implies 'not spliced' from a
      column the experiment does not have. sjCol = does this model's stage-3 table carry star_junction at all. */
+  function cigDesc(c) { c = String(c || ''); if (!c) return 'not recorded'; if (/N/.test(c)) return 'split across an intron'; if (/S/.test(c)) return 'partly aligned'; if (/[ID]/.test(c)) return 'full length with an insertion or deletion'; if (/^\d+M$/.test(c)) return 'full length'; return 'aligned'; }
   function alnText(f, sjCol) {
-    if (!f.cig) return 'not recorded — stage 3 gives no CIGAR for this alignment';
+    if (!f.cig) return 'not recorded: the sequence file gives no CIGAR for this alignment';
     const e = edNum(f), sc = (f.cig || '').indexOf('S') >= 0, bits = [];
     if (sc) bits.push('soft-clipped');
     if (e === null) bits.push('mismatches not recorded');
     else if (e > 0 || !bits.length) bits.push(`${e} mismatch${e === 1 ? '' : 'es'}`);
     if (!sjCol) bits.push('splicing not recorded for this dataset');
     else if (f.sj) bits.push(`<b>spliced</b> (<span class="mono">${esc(String(f.sj))}</span>)`);
-    return `<span class="mono">${esc(f.cig)}</span>, ${bits.join(', ')}`;
+    return `${cigDesc(f.cig)}, ${bits.join(', ')}`;
   }
 
   /* the unplaced panel. Counts first (always a share, never a bare number), then the heaviest
@@ -1102,7 +1096,7 @@
     const U = (UNG(CUR) || {})[model];
     if (!U) { box.innerHTML = ''; return; }
     if (!U.unpl) {
-      box.innerHTML = '<p class="note dim">Every selected sequence of this model placed on the genome — nothing to show here.</p>';
+      box.innerHTML = '<p class="note dim">Every selected sequence of this model placed on the genome. Nothing to show here.</p>';
       return;
     }
     const gloc = U.loc || 0;                               /* placed on the genome only */
@@ -1121,19 +1115,19 @@
       `</div>` +
       `<div class="ub-bars">` + bar(U.mouse, 'ub-m', 'matched a mouse transcript') +
         bar(U.human, 'ub-h', 'matched a human transcript') +
-        bar(gloc, 'ub-g', 'matched the genome only — a locus, not a transcript') +
+        bar(gloc, 'ub-g', 'matched the genome only (a locus, not a transcript)') +
         bar(U.nohit, 'ub-n0', 'searched, no confident hit') + bar(other, 'ub-n0', 'not searched') + `</div>` +
       `<button class="tab" type="button" id="ub-more" aria-pressed="${unplOpen}">` +
         `${unplOpen ? 'hide the list' : 'list the ' + int(Math.min(U.cap, U.unpl)) + ' heaviest'}</button>` +
       (U.unpl > U.cap ? `<span class="ub-cap">ranked by model weight · the counts above cover all ${int(U.unpl)}</span>` : '') +
-      (unplOpen ? `<p class="ub-how">Click any row of the table to open that sequence's full BLAST result — it opens directly below the table.</p>` : '') +
+      (unplOpen ? `<p class="ub-how">Click any row of the table to open that sequence's full BLAST result; it opens directly below the table.</p>` : '') +
       `<div id="ub-tbl"></div>`;
     $('ub-more').onclick = () => { unplOpen = !unplOpen; renderUnplaced(model); };
     if (!unplOpen) return;
 
     const B0 = BLG(CUR) || {};
     $('ub-tbl').innerHTML = '<div class="scroll"><table><thead><tr>' +
-      '<th></th><th>weight</th><th>gene (BLAST)</th><th>species</th><th>identity</th><th>covered</th><th>sequence</th>' +
+      '<th></th><th>weight</th><th>gene (BLAST)</th><th>species</th><th>identity</th><th>covered</th>' +
       '</tr></thead><tbody>' +
       U.rows.map(([a, t, w], i) => {
         const e = B0[a + t] || null;
@@ -1146,10 +1140,10 @@
           ` aria-expanded="${unplPick === i}" title="open this sequence's BLAST result">` +
           `<td class="ub-ar">${unplPick === i ? '▾' : '›'}</td>` +
           `<td>${fmt(w, 4)}</td><td>${g}</td>` +
-          `<td>${e && e.r ? esc(e.sp) : (e && e.loc ? esc(e.loc.gen) + ' genome' : '—')}</td>` +
-          `<td>${e && e.r ? fmt(e.id, 1) + '%' : (e && e.loc ? fmt(e.loc.id, 1) + '%' : '—')}</td>` +
-          `<td>${e && e.r ? fmt(e.cov, 0) + '%' : (e && e.loc ? fmt(e.loc.cov, 0) + '%' : '—')}</td>` +
-          `<td class="mono dim">${esc(a)}${esc(t)}</td></tr>`;
+          `<td>${e && e.r ? esc(e.sp) : (e && e.loc ? esc(e.loc.gen) + ' genome' : 'none')}</td>` +
+          `<td>${e && e.r ? fmt(e.id, 1) + '%' : (e && e.loc ? fmt(e.loc.id, 1) + '%' : 'none')}</td>` +
+          `<td>${e && e.r ? fmt(e.cov, 0) + '%' : (e && e.loc ? fmt(e.loc.cov, 0) + '%' : 'none')}</td>` +
+          `</tr>`;
       }).join('') + '</tbody></table></div><div id="ub-card"></div>';
     $('ub-tbl').querySelectorAll('.ub-tr').forEach(tr => {
       /* a row IS the control: pointer and keyboard both open it, and clicking the open row closes
@@ -1168,13 +1162,9 @@
     /* the card states only what is known. A sequence that never placed has no position, no
        exon/intron call and no transcript, so those rows are absent rather than blank. */
     $('ub-card').innerHTML = `<div class="brseq"><span class="rk">selected sequence · row ${unplPick + 1} of ${int(U.rows.length)} above</span>` + dl([
-      ['sequence', `<span class="seq39">${esc(a)}${esc(t)}</span>` +
-        ` <button type="button" class="cp" data-seq="${esc(a + t)}">copy</button>`],
-      ['anchor', `<span class="mono">${esc(a)}</span> · ${esc(String(a).length)} bases`],
-      ['target', `<span class="mono">${esc(t)}</span> · ${esc(String(t).length)} bases, read right after the anchor`],
       ['model', esc(label(model))],
-      ['weight', `<b>${fmt(w, 4)}</b> — summed across this model's classes`],
-      ['position', '<span style="color:var(--warn)">none — no aligner placed this sequence</span>'],
+      ['weight', `<b>${fmt(w, 4)}</b>, summed across this model's classes`],
+      ['position', '<span style="color:var(--warn)">none: no aligner placed this sequence</span>'],
       ['BLAST', blastRow({ a: a, t: t })],
     ]) + '</div>';
     const card = $('ub-card');
@@ -1232,15 +1222,7 @@
     if (!soSel.value) soSel.value = 'w';
     let pick = null;
 
-    $('br-howto').innerHTML = '<span class="rk">how to read this</span>' + dl([
-        ['shows', 'where a model’s sequences sit inside a gene — exon or intron'],
-        ['how to use', 'pick a trained dataset, then click a gene on the left; the track zooms to where the sequences are, and the caption says how much of the gene is shown'],
-        ['tall blocks', 'exons (coding parts taller)'],
-        ['thin line', 'intron; the chevrons show the direction the gene is read'],
-        ['lollipops', 'one sequence each, at the position it aligned to. Height = its weight; colour = the cell type it favours most (grey = none); amber ring = in an intron'],
-        ['why it matters', 'a sequence in an exon supports its gene name; one in an intron suggests the name may be a coincidence'],
-        ['not drawn', 'sequences placed only by BLAST (no genome position), and alignments far outside the gene — both are counted in the note below'],
-      ]);
+    $('br-howto').innerHTML = '';
 
     function draw() {
       const d = dSel.value, genes = trackGenes(d), MD = B.models[d], grid = modelBy[d].grid, classes = MD.classes || []; _brSp = (modelBy[d] && modelBy[d].species === 'macaque') ? 'macaque' : ((genes[0] && genes[0].ref === 'macaque') ? 'macaque' : 'human');
@@ -1248,8 +1230,8 @@
       const why = markerBlock(grid, tissue, classes);
       mk.disabled = !!why;
       if (why) mk.setAttribute('aria-pressed', 'false');
-      mk.title = why ? `markers unavailable: ${why}` : 'show only the genes the cited table lists for this model\'s cell types';
-      $('br-mk-why').textContent = why ? `markers unavailable — ${why}` : '';
+      mk.title = why ? 'no cited marker list for these cell types' : 'show only the genes the cited table lists for this model\'s cell types';
+      $('br-mk-why').textContent = '';
       $('br-mksrc').innerHTML = markerSources(grid, tissue, classes);
       let rows = genes.map(g => Object.assign({}, g, { marker: markerFor(grid, tissue, g.gene, classes) }));
       if (mk.getAttribute('aria-pressed') === 'true') rows = rows.filter(r => r.marker !== null);
@@ -1296,12 +1278,12 @@
       /* the legend names EVERY mark on the figure. Colour = the cell type the feature's weight
          vector points hardest toward -- NOT the sequence type, NOT an annotation. */
       $('br-leg').innerHTML =
-        `<span style="width:100%;color:var(--ink-2)">each filled dot is one 39-base sequence; its colour is the cell type that sequence's weight pushes hardest toward</span>` +
+        `<span style="width:100%;color:var(--ink-2)">each filled dot is one sequence; its colour is the cell type its weight is most toward</span>` +
         classes.map((c, i) => `<span><span class="sw" style="background:${clsCol(i)}"></span>${esc(clsName(c))}</span>`).join('') +
         `<span><span class="sw" style="background:var(--ink-3)"></span>pushes toward no cell type</span>` +
-        `<span><span class="sw" style="background:transparent;border:2px solid var(--warn)"></span>amber ring — the sequence is in an intron of the top transcript</span>` +
+        `<span><span class="sw" style="background:transparent;border:2px solid var(--warn)"></span>amber ring: the sequence is in an intron of the top transcript</span>` +
         `<span><span class="sw" style="background:var(--seq-400);border:1px solid var(--seq-600)"></span>boxes are exons (tall = coding, short = UTR); the thin line is intron</span>` +
-        `<span><span class="sw" style="background:var(--coef-neg);border-radius:2px;transform:rotate(45deg)"></span>diamond on an isoform row — that isoform annotates the sequence differently</span>`;
+        `<span><span class="sw" style="background:var(--coef-neg);border-radius:2px;transform:rotate(45deg)"></span>diamond on an isoform row: that isoform annotates the sequence differently</span>`;
       drawTrack(rows.find(r => r.gene === pick), d);
       drawBins(d);
     }
@@ -1371,7 +1353,7 @@
 
       const col0 = clsCol(G.top), topName = G.top !== null && G.top !== undefined ? clsName(classes[G.top]) : 'no cell type';
       s.appendChild(E('text', { x: ML, y: 18, class: 'axtitle', fill: 'var(--ink)' },
-        `${G.gene}  ${M.chr}:${gLo.toLocaleString('en-US')}–${gHi.toLocaleString('en-US')}  (${M.strand} strand)`));
+        `${G.gene}  ${M.chr}:${gLo.toLocaleString('en-US')} to ${gHi.toLocaleString('en-US')}  (${M.strand} strand)`));
       s.appendChild(E('text', { x: W - MR, y: 18, class: 'axtitle', 'text-anchor': 'end', fill: col0 },
         `${fmt(G.w, 3)} → ${topName}`));
       s.appendChild(E('text', { x: ML, y: 35, class: 'axlab' },
@@ -1397,7 +1379,7 @@
         const r = E('rect', { x: x0, y: AX - h / 2, width: Math.max(3, x1 - x0), height: h,
           rx: 2, fill: 'var(--seq-400)', stroke: 'var(--seq-600)', 'stroke-width': .8 });
         s.appendChild(r);
-        bindTip(r, `exon ${es.toLocaleString('en-US')}–${ee.toLocaleString('en-US')}<br>
+        bindTip(r, `exon ${es.toLocaleString('en-US')} to ${ee.toLocaleString('en-US')}<br>
           ${(ee - es + 1).toLocaleString('en-US')} bp · ${isC ? 'coding' : 'UTR / non-coding'}`);
       });
 
@@ -1417,7 +1399,7 @@
         const len = 16 + LMAX * Math.sqrt(Math.abs(f.w) / maxA);
         const y2 = AX - len;
         const col = clsCol(f.top);
-        const g = E('g', { class: 'lp', tabindex: 0, role: 'button', 'aria-label': `sequence ${f.a}${f.t} at ${f.p}` });
+        const g = E('g', { class: 'lp', tabindex: 0, role: 'button', 'aria-label': `sequence at ${M.chr}:${f.p.toLocaleString('en-US')}` });
         /* heads overlap wherever two sequences sit at a similar position AND a similar weight, and the
            last one drawn swallowed the clicks (user, 2026-09-19). Three fixes, none of which move a mark:
            a ring in the surface colour so touching heads stay countable, a smaller head, and a hit
@@ -1433,7 +1415,7 @@
         g.addEventListener('pointerenter', raise);
         g.addEventListener('focus', raise);
         s.appendChild(g);
-        bindTip(g, `<b>${esc(f.a)}</b><span class="mono">${esc(f.t)}</span><br>click for details`);
+        bindTip(g, `<b>${esc(M.chr)}:${f.p.toLocaleString('en-US')}</b><br>click for details`);
         const open = () => {
           if (lpOn) lpOn.classList.remove('on');
           g.classList.add('on');
@@ -1442,18 +1424,14 @@
           if (!out) return;
           out.hidden = false;
           out.innerHTML = '<span class="rk">selected sequence</span>' + dl([
-            ['sequence', `<span class="seq39">${seq39html(f)}</span>
-              <button type="button" class="cp" data-seq="${esc(f.a + f.t)}">copy</button>`],
-            ['anchor', `<span class="mono">${esc(f.a)}</span> · ${esc(String(f.a).length)} bases`],
-            ['target', `<span class="mono">${esc(f.t)}</span> · ${esc(String(f.t).length)} bases, read right after the anchor`],
             ['gene', `<b>${esc(G.gene)}</b> · model ${esc(label(d))}`],
-            ['position', `${esc(M.chr)}:${f.p.toLocaleString('en-US')} (${esc(M.asm||'GRCh38')}) · ${f.L} bp`],
+            ['position', `${esc(M.chr)}:${f.p.toLocaleString('en-US')} (${esc(M.asm||'GRCh38')})`],
             ['where', (f.ex ? '<b>in an exon</b>' : '<b style="color:var(--warn)">in an intron</b>') +
               (f.in ? '' : ' · <span style="color:var(--warn)">outside the gene’s full bounds</span>')],
             ['along transcript', f.ex && f.frac !== null && f.frac !== undefined ? `${fmt(f.frac, 2)} (0 = 5′ end, 1 = 3′ end)` : ''],
             /* the four rows the lab head asked for, right after the sequence rows. An absent value is SAID
                ('none', 'not in ClinVar'), never left blank and never filled with a stand-in that reads as real. */
-            ['P2G rank', f.rank === null || f.rank === undefined || f.rank === '' ? 'not recorded'
+            ['rank', f.rank === null || f.rank === undefined || f.rank === '' ? 'not recorded'
               : `<b>${esc(String(f.rank))}</b> · the rank this target was taken at`],
             ['alignment', alnText(f, sjCol)],
             ['mismatch', csText(f)],
@@ -1461,7 +1439,7 @@
             ['ClinVar', (f.cvs ? `<b>${esc(String(f.cvs))}</b>${f.cvi ? ` (VCV ${esc(String(f.cvi))})` : ''}`
               : f.cvi ? `listed, no significance given (VCV ${esc(String(f.cvi))})` : 'not in ClinVar')
               + (f.cos ? ` · COSMIC <span class="mono">${esc(String(f.cos))}</span>` : '')],
-            ['weight', `<b style="color:${col}">${fmt(f.w, 4)}</b> — pushes hardest toward ${f.top !== null && f.top !== undefined ? esc(clsName(classes[f.top])) : 'no cell type'}`],
+            ['weight', `<b style="color:${col}">${fmt(f.w, 4)}</b> · most toward ${f.top !== null && f.top !== undefined ? esc(clsName(classes[f.top])) : 'no cell type'}`],
             ['anchor-term weight', f.wa > 0 ? fmt(f.wa, 4) : ''],
             ['aligned by', `${esc(f.al || '')}${f.ed && f.ed !== '0' && f.ed !== '*' ? ` · <span style="color:var(--warn)">${esc(f.ed)} mismatch</span>` : ' · exact'}`],
             /* BLAST (2026-09-23). Only sequences WITHOUT a confident alignment were searched, so
@@ -1487,17 +1465,17 @@
         flagged[fl] = (flagged[fl] || 0) + 1;
         if (fl !== 'clean') {
           const gf = E('g', { class: 'lpf', tabindex: 0, role: 'button',
-            'aria-label': `${FLAGLAB[fl]} sequence ${f.a}${f.t}` });
+            'aria-label': `${FLAGLAB[fl]} sequence at ${M.chr}:${f.p.toLocaleString('en-US')}` });
           gf.appendChild(E('rect', { x: x - 7, y: AX + 10, width: 14, height: 22, fill: 'transparent' }));
           gf.appendChild(E('line', { x1: x, x2: x, y1: AX + 12, y2: yF - 4, stroke: col, 'stroke-width': 1, opacity: .45 }));
           flagMark(gf, x, yF, fl, col);
           s.appendChild(gf);
           const e0 = edNum(f);
           bindTip(gf, `<b>${FLAGLAB[fl]}</b>${fl === 'spliced' ? ` · <span class="mono">${esc(String(f.sj))}</span>` : ''}` +
-            `<br><span class="mono">${esc(f.cig || 'no CIGAR')}</span> · ` +
+            `<br>${esc(cigDesc(f.cig))} · ` +
             (e0 === null ? 'edit distance not recorded' : `edit distance ${e0}`) +
             (sjCol ? '' : '<br>splicing not recorded for this dataset') +
-            `<br>${esc(f.a)}${esc(f.t)} · click for details`);
+            `<br>click for details`);
           gf.addEventListener('click', open);
           gf.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } });
         }
@@ -1512,7 +1490,7 @@
         s.appendChild(E('line', { x1: ML, x2: W - MR, y1: ISO_Y0, y2: ISO_Y0,
           stroke: 'var(--hairline)', 'stroke-width': 1 }));
         s.appendChild(E('text', { x: ML, y: hy + 6, class: 'axtitle', fill: 'var(--ink-2)' },
-          `splice isoforms — ${nIso === isoAll.length ? 'all ' : `${nIso} of `}${isoAll.length}` +
+          `splice isoforms: ${nIso === isoAll.length ? 'all ' : `${nIso} of `}${isoAll.length}` +
           ` that read one of this gene's ${ISOD.positions.length} sequences differently,` +
           ` out of ${ISOD.n_total} transcripts`));
         s.appendChild(E('text', { x: W - MR, y: hy + 6, class: 'axlab', 'text-anchor': 'end',
@@ -1523,7 +1501,7 @@
           s.appendChild(E('text', { x: ML, y: yL, class: 'axlab', fill: 'var(--ink-2)' },
             `${t.tname}  \u00b7  ${t.tx}  \u00b7  ${t.ttype.replace(/_/g, ' ')}` +
             (t.stands_for > 1 ? `  \u00b7  ${t.stands_for} isoforms annotate it this way` : '') +
-            `  \u00b7  ${t.changes} of ${ISOD.positions.length} sequences annotated differently`));
+            `  \u00b7  ${t.changes != null ? t.changes : (t.chg || []).length} of ${ISOD.positions.length} sequences annotated differently`));
           s.appendChild(E('line', { x1: X(Math.max(t.start, lo)), x2: X(Math.min(t.end, hi)),
             y1: yR, y2: yR, stroke: 'var(--ink-3)', 'stroke-width': 1.2 }));
           t.exons.forEach(([es, ee]) => {
@@ -1534,7 +1512,7 @@
             const r = E('rect', { x: x0, y: yR - h / 2, width: Math.max(2.5, x1 - x0), height: h,
               rx: 2, fill: 'var(--seq-400)', stroke: 'var(--seq-600)', 'stroke-width': .8 });
             s.appendChild(r);
-            bindTip(r, `<b>${esc(t.tname || t.tx)}</b><br>exon ${es.toLocaleString('en-US')}\u2013${ee.toLocaleString('en-US')}` +
+            bindTip(r, `<b>${esc(t.tname || t.tx)}</b><br>exon ${es.toLocaleString('en-US')} to ${ee.toLocaleString('en-US')}` +
               `<br>${(ee - es + 1).toLocaleString('en-US')} bp \u00b7 ${isC ? 'coding' : 'UTR / non-coding'}`);
           });
           /* a filled diamond, deliberately NOT an amber ring: amber already means "intronic on the
@@ -1615,7 +1593,7 @@
             ? `<b>All ${NTOT} transcripts of this gene read its sequences the same way.</b> ` +
               `<b>${esc(G.gene)}</b> is shown on the ${STRAND} strand of ${M.asm||'GRCh38'}, as ${REFNAME}. ` +
               `Its ${NPOS} ${SEQS} all fall where every annotated transcript agrees, so the single ` +
-              `track above stands for all ${NTOT} — there is no alternative reading to draw. `
+              `track above stands for all ${NTOT}; there is no alternative reading to draw. `
             : `<b>No alternative transcript reannotates this gene's sequences.</b> ` +
               `<b>${esc(G.gene)}</b> is shown on the ${STRAND} strand of ${M.asm||'GRCh38'}, as ${REFNAME}. ` +
               `Of its ${NTOT} annotated transcripts, every other one either reads all ${NPOS} ` +
@@ -1649,7 +1627,7 @@
       kb.style.margin = '4px 0 0';
       const kt = t => { const n = document.createElement('span'); n.textContent = t; kb.appendChild(n); };
       kt('below the line: ');
-      [['spliced', sjCol ? 'spliced (STAR junction)' : 'spliced — not recorded for this dataset'],
+      [['spliced', sjCol ? 'spliced (STAR junction)' : 'spliced: not recorded for this dataset'],
        ['softclip', 'soft-clipped (CIGAR S)'], ['mismatch', 'mismatch (edit distance > 0)']]
         .forEach(([fk, lab], i) => {
           if (i) kt(' \u00b7 ');
@@ -1667,21 +1645,20 @@
              tells you whether the flag fires at all in this dataset (user, 2026-09-19) */
           const tot = MTOT[fk] || 0;
           kt(fk === 'spliced' && !sjCol ? lab
-             : `${lab} — ${flagged[fk] || 0} here, ${tot.toLocaleString()} in this model`);
+             : `${lab}: ${flagged[fk] || 0} here, ${tot.toLocaleString()} in this model`);
         });
-      kt(`; nothing below the line = clean 39M — ${flagged.clean || 0} here, `
-         + `${(MTOT.clean || 0).toLocaleString()} in this model. Hover a mark for its CIGAR and edit distance.`);
+      kt(`; nothing below the line = exact match: ${flagged.clean || 0} here, `
+         + `${(MTOT.clean || 0).toLocaleString()} in this model. Hover a mark for its alignment and edit distance.`);
       box.appendChild(kb);
 
       if (offWindow > 0) {
         const note = document.createElement('p'); note.className = 'note'; note.style.margin = '8px 0 0';
         note.innerHTML = `<span style="color:var(--warn)">⚠</span> ${offWindow} of ${G.feats.length}
-          selected sequence${offWindow > 1 ? 's' : ''} for this gene ${offWindow > 1 ? 'sit' : 'sits'}
+          selected sequence${offWindow > 1 ? 's' : ''} for this gene ${offWindow > 1 ? 'are' : 'is'}
           outside the zoomed window shown` +
           (outliers.length ? `, including <b>${outliers.length}</b> whose alignment lands
             <b>${Math.round(Math.min(...outliers.map(f => Math.min(Math.abs(f.p - gLo), Math.abs(f.p - gHi)))) / 1000).toLocaleString('en-US')}+ kb</b>
-            outside ${esc(G.gene)}'s own body — almost certainly a weak or ambiguous alignment rather
-            than real biology` : '') + '.';
+            outside ${esc(G.gene)}'s own body. These are almost certainly weak or ambiguous alignments` : '') + '.';
         box.appendChild(note);
       }
 
@@ -1701,7 +1678,7 @@
           + (sjCol ? '' : ' \u00b7 splicing not recorded for this dataset') + `</span>`],
         ['weight', `<b style="color:${col0}">${fmt(G.w, 4)}</b>, favouring ${esc(topName)}`],
         ['locus', `${(gLen / 1000).toFixed(1)} kb on ${esc(M.chr)}, ${esc(M.strand)} strand, ${M.exons.length} exons (${esc(M.pick)} transcript ${esc(M.tx || '')})`],
-        ['BLAST only', G.blast ? `${int(G.blast)} more sequences, placed on a RefSeq transcript with no genome position — counted, not drawn` : ''],
+        ['BLAST only', G.blast ? `${int(G.blast)} more sequences, placed on a RefSeq transcript with no genome position; counted, not drawn` : ''],
         ['species', xs ? 'mouse sequences placed on the human gene (cross-species)' : ''],
       ]);
     }
@@ -1711,6 +1688,8 @@
       const mouse = isXsp(modelBy[d].grid);
       const key = Object.keys(B.species_summary || {}).find(k => k.indexOf(mouse ? 'mouse (' : 'human (') === 0);
       const S = key ? B.species_summary[key] : null;
+      const binWrap = $('br-bins') && $('br-bins').parentNode && $('br-bins').parentNode.parentNode;
+      if (binWrap) binWrap.style.display = (S && S.length_bins && S.length_bins.length) ? '' : 'none';
       if (!S || !S.length_bins || !S.length_bins.length) { $('br-bins').innerHTML = ''; $('br-bins-note').innerHTML = ''; return; }
       const LB = S.length_bins;
       $('br-bins').innerHTML =
@@ -1718,7 +1697,7 @@
           <th>% exonic</th><th>exon share of the locus</th><th>enrichment over uniform</th>
           </tr></thead><tbody>` +
         LB.map(r => `<tr>
-          <td><b>${r.lo}–${r.hi === null ? '∞' : r.hi} kb</b></td>
+          <td><b>${r.lo} to ${r.hi === null ? '∞' : r.hi} kb</b></td>
           <td class="dim">${int(r.genes)}</td><td>${int(r.kmers)}</td><td>${int(r.exonic)}</td>
           <td><b>${r.pct_exonic.toFixed(1)}%</b></td>
           <td class="dim">${r.exon_share.toFixed(1)}%</td>
@@ -1731,10 +1710,10 @@
         ['in exons overall', `<b>${S.pct_exonic_of_placed}%</b> of placed sequences`],
         ['by gene length', `${first.pct_exonic.toFixed(0)}% for genes under ${first.hi} kb → ${last.pct_exonic.toFixed(0)}% for genes over ${last.lo} kb`],
         ['but', `a ${last.lo} kb+ gene is only ${last.exon_share.toFixed(1)}% exon, so chance alone would put ${last.exon_share.toFixed(1)}% of sequences there; we see ${last.pct_exonic.toFixed(1)}%, <b>${last.enrich.toFixed(0)}×</b> more`],
-        ['so', `exons are enriched at every length (${Math.min(...LB.map(r => r.enrich)).toFixed(1)}–${Math.max(...LB.map(r => r.enrich)).toFixed(1)}×); long genes look intronic because they are mostly intron. The intronic share is unspliced pre-mRNA, which single-cell RNA-seq also captures`],
+        ['so', `exons are enriched at every length (${Math.min(...LB.map(r => r.enrich)).toFixed(1)} to ${Math.max(...LB.map(r => r.enrich)).toFixed(1)}×); long genes look intronic because they are mostly intron. The intronic share is unspliced pre-mRNA, which single-cell RNA-seq also captures`],
         ['examples', EXS.all_exonic && EXS.all_exonic.length && EXS.all_intronic && EXS.all_intronic.length
           ? `all in exons: ${exl(EXS.all_exonic)} · all in introns: ${exl(EXS.all_intronic)}` : ''],
-        ['note', mouse ? `mouse sequences placed on the human genome — only the ${S.pct_aligned}% that align are counted` : ''],
+        ['note', mouse ? `mouse sequences placed on the human genome; only the ${S.pct_aligned}% that align are counted` : ''],
       ]);
     }
 
@@ -1745,14 +1724,14 @@
     const bl = (GD(CUR).blast || {});
     const mouse = isXsp(CUR);
     $('br-caveat').innerHTML = bul([
-        `<b>Positions are on the ${gASM()} genome</b> (${gANNOT()}). In the ${esc(GRIDSHORT[CUR])} models, ${S0.pct_aligned}% of the selected sequences align.`,
+        GENOMESAY(),
         mouse
-          ? `<b>${esc(GRIDSHORT[CUR])} is mouse, aligned to human.</b> ${bc.pct_in_GRCh38_gene_of_named}% of its placed, named sequences fall inside the human gene against ${bc.pct_in_GRCm39_gene_of_mouse_symbol}% inside the same-named mouse gene, and ${int(bc.on_human_only_contig)} sit on human-only contigs — every track here is cross-species.`
-          : gGENOME(),
+          ? `<b>${esc(GRIDSHORT[CUR])} is mouse, aligned to human.</b> ${bc.pct_in_GRCh38_gene_of_named}% of its placed, named sequences fall inside the human gene against ${bc.pct_in_GRCm39_gene_of_mouse_symbol}% inside the same-named mouse gene, and ${int(bc.on_human_only_contig)} are on human-only contigs, so every track here is cross-species.`
+          : '',
         cav.blast_rescue === false
-          ? `<b>No BLAST rescue in this experiment.</b> The unaligned sequences of the ${esc(GRIDSHORT[CUR])} models were not sent to NCBI BLAST, so nothing here carries a lower-confidence transcript placement. Alignment alone already names ${esc(covRange(CUR))} of each model's sequence weight.`
-          : `<b>BLAST rescue.</b> The ${int(bl.n_query)} strongest unaligned sequences (10 per model) were sent to NCBI BLAST; ${int(bl.n_with_gene)} got a gene. They have a transcript position but no genome position, so they are counted and not drawn.`,
-        `<b>One transcript per gene</b> (MANE Select, else canonical, else longest). A sequence shown in an intron may be in an exon of another isoform; ${S0.pct_inside_of_placed}% fall inside the gene's full bounds, and the rest are marked <span style="color:var(--warn)">outside gene bounds</span>.`,
+          ? `<b>No BLAST rescue in this experiment.</b> The unaligned sequences of the ${esc(GRIDSHORT[CUR])} models were not sent to NCBI BLAST, so nothing here has a lower-confidence transcript placement. Alignment alone already names ${esc(covRange(CUR))} of each model's sequence weight.`
+          : '',
+        `<b>One transcript per gene</b> (MANE Select, else canonical, else longest). A sequence shown in an intron may be in an exon of another isoform${typeof S0.pct_inside_of_placed === 'number' ? `; ${S0.pct_inside_of_placed}% fall inside the gene's full bounds, and the rest are marked` : '. Sequences outside the gene\'s full bounds are marked'} <span style="color:var(--warn)">outside gene bounds</span>.`,
       ]);
 
     dSel.onchange = () => { pick = null; const o = $('br-seq'); if (o) { o.hidden = true; o.innerHTML = ''; } draw(); };
@@ -1766,6 +1745,7 @@
 
   /* ================= footer: limitations, sources, provenance (reference _js7 renderFooter) ================= */
   function renderFooter() {
+    if (!$('limits')) return;
     const m = D.meta, P3 = GD(CUR), acc = P3.acceptance || [];
     const cov = (P3.gene_map_coverage || []).filter(r => r.value_weight_mapped_pct_with_blast !== null);
     const covMin = cov.length ? cov.reduce((a, b) => (a.value_weight_mapped_pct_with_blast <= b.value_weight_mapped_pct_with_blast ? a : b)) : null;
@@ -1782,26 +1762,24 @@
       `<b>K counts the model itself.</b> “Picked by K models” and “appears in K datasets” include the model on screen and its own dataset.`,
       cav.mouse_on_human_genome
         ? `<b>${esc(GRIDSHORT[CUR])} is cross-species.</b> Its mouse sequences were aligned to the human genome: only ${M0.pct_aligned}% align, and gene names are human.`
-        : `<b>Gene names are labels, not inputs.</b> They were attached after the model was fitted; ${M0.pct_aligned}% of the selected sequences align to ${gASM()}.`,
+        : `<b>Gene names are labels, not inputs.</b> They were attached after the model was fitted` + (typeof M0.pct_aligned === 'number' ? `; ${M0.pct_aligned}% of the selected sequences align to ${gASM()}.` : '.'),
       `<b>One gene per feature.</b> A gene sharing features with a stronger neighbour can look weaker than it is.`,
       covMin ? `<b>Gene names are incomplete.</b> The least-covered model (${esc(covMin.grid)} ${esc(covMin.model)}) has names for ${covMin.value_weight_mapped_pct_with_blast}% of its sequence weight.` : '',
       cav.blast_rescue === false
         ? `<b>No BLAST rescue here.</b> Unaligned ${esc(GRIDSHORT[CUR])} sequences were not sent to NCBI BLAST, so an unplaced sequence stays unnamed.`
-        : `<b>BLAST is a sample.</b> ${int((P3.blast || {}).n_query)} sequences (10 per model); at 39 bases a best hit suggests, it does not prove.`,
-      `<b>The gene chart uses a sample</b> of ${int(Math.min(...pairs.map(p => p.live.n)))}–${int(Math.max(...pairs.map(p => p.live.n)))} cells per pair; the explorer and the reference line use every test cell.`,
+        : '',
+      `<b>The gene chart uses a sample</b> of ${int(Math.min(...pairs.map(p => p.live.n)))} to ${int(Math.max(...pairs.map(p => p.live.n)))} cells per pair; the explorer and the reference line use every test cell.`,
       `<b>Small cell types are noisy.</b> The smallest shared cell type in any pair has ${int(minCls)} cells.`,
-      `<b>One transcript per gene</b> in the tracks — a sequence shown in an intron may be exonic in another isoform.`,
+      `<b>One transcript per gene</b> in the tracks. A sequence shown in an intron may be exonic in another isoform.`,
       `<b>Marker genes only label.</b> They come from the cited marker table; no score depends on them.`,
     ].filter(Boolean).map(t => `<li>${t}</li>`).join('');
     $('cites').innerHTML = [
-      `<b>${esc(GRIDNAME[CUR])}</b> — ${esc(D.grids[CUR].cite || '')}`,
-      `<b>Gene models</b> — ${esc((B.notes || {}).reference || '')}; one representative transcript per gene.`,
-      cav.blast_rescue === false ? '' : `<b>Remote rescue</b> — NCBI BLAST against nt, QBlast URL API; ${esc((P3.blast || {}).rule || '')}.`,
-      `<b>Scoring</b> — ${esc(m.scorer)}.`,
-      `<b>Features</b> — ${esc(m.unit_rule)}.`,
-      `<b>Marker genes</b> — the cited table's own sources, listed under the gene close-up and the gene track.`,
+      `<b>${esc(GRIDNAME[CUR])}</b>: ${esc(String(D.grids[CUR].cite || '').replace(/\s*\u2014\s*/g, ', '))}`,
+      `<b>Gene models</b>: ${esc((B.notes || {}).reference || 'GENCODE v50 basic (GRCh38)')}; one representative transcript per gene.`,
+      `<b>Marker genes</b>: the cited table's own sources, listed under the gene close-up and the gene track.`,
     ].filter(Boolean).map(t => `<li>${t}</li>`).join('');
-    $('prov').innerHTML = Object.entries(m.sources || {}).map(([k, v]) =>
+    if ($('prov')) $('prov').innerHTML = '';
+    if (false) Object.entries(m.sources || {}).map(([k, v]) =>
       `${esc(k)}<br>&nbsp;&nbsp;${esc(v)}`).join('<br><br>') +
       `<br><br>${esc(GRIDNAME[CUR])}: ${int(pairs.length)} scored pairs of ${int(D.grids[CUR].n_pairs_ordered)} ordered.
        Every scored pair's whole-model endpoint reproduces the results-page score:
@@ -1879,7 +1857,7 @@
     if (!el) return;
     const G = D.grids[CUR], cav = G.caveat || {}, bc = cav.build_check || {};
     const lines = [];
-    if (cav.mouse_on_human_genome) {
+    if (cav.mouse_on_human_genome && isXsp(CUR)) {
       lines.push(`<b>${esc(GRIDSHORT[CUR])} is mouse, annotated against the human genome.</b> Its mouse sequences
         were aligned to GRCh38, so the gene names and positions in the gene close-up and the gene track are
         cross-species: ${bc.pct_in_GRCh38_gene_of_named}% of its placed, named sequences sit inside their human

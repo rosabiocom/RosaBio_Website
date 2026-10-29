@@ -608,6 +608,7 @@ details.fold>table{width:calc(100% - 32px)}
 </style>
 <style>
 body{padding:8px 12px 30px!important;margin:0;background:var(--bg)}
+.readme:empty{display:none}
 .struct-toc,.watermark,.rosa-theme,.wmctl{display:none!important}
 #p3-gridtabs,.p3gthead,#p3-gridnote,#p3-tmwarn{display:none!important}
 body.only-closeup #s-explore,body.only-closeup #s-browser{display:none!important}
@@ -621,7 +622,7 @@ section{border-top:0!important;padding-top:4px!important}
 </head><body>
 <div class="p3x" id="p3x">
 <div id="tip" role="tooltip"></div>
-<p class="p3gthead">Pick one of the <b>six transfer experiments</b> — the three tools below all
+<p class="p3gthead">Pick one of the <b>six transfer experiments</b>. The three tools below all
 show whichever one is selected.</p>
 <div class="p3gtabs" id="p3-gridtabs" role="tablist" aria-label="cross experiment"></div>
 <p class="note" id="p3-gridnote"></p>
@@ -630,7 +631,7 @@ show whichever one is selected.</p>
 <section id="s-explore">
   <div class="eyebrow">3.1 &middot; the cross-study explorer</div>
   <h3>The score as the model’s features are added one at a time.</h3>
-  <p class="sub">One trained dataset, one tested dataset. Each point adds the next strongest feature; the last
+  <p class="sub">One trained dataset, one tested dataset. Each point adds the feature with the next largest weight; the last
   point is the score Part 1 reports for that pair.</p>
   <div class="readme" data-edit-id="ex-howto" id="ex-howto"></div>
   <div class="ctl">
@@ -642,11 +643,11 @@ show whichever one is selected.</p>
   <div class="ctl">
     <label for="ex-fam">3 &middot; &ldquo;common&rdquo; means</label>
     <select id="ex-fam">
-      <option value="all">no restriction &mdash; use the whole model</option>
-      <option value="present">B &mdash; the sequence APPEARS in the grid's datasets</option>
-      <option value="picked">A &mdash; the sequence was PICKED by the grid's models</option>
-      <option value="test">C &mdash; the sequence APPEARS in the tested dataset</option>
-      <option value="other">D &mdash; the sequence APPEARS in the other chemistry</option>
+      <option value="all">no restriction: use the whole model</option>
+      <option value="present">B: the sequence APPEARS in the grid's datasets</option>
+      <option value="picked">A: the sequence was PICKED by the grid's models</option>
+      <option value="test">C: the sequence APPEARS in the tested dataset</option>
+      <option value="other">D: the sequence APPEARS in the other chemistry</option>
     </select>
     <span id="ex-k-wrap"><label for="ex-k">4 &middot; in at least</label>
     <select id="ex-k"></select></span>
@@ -670,7 +671,7 @@ show whichever one is selected.</p>
 
 <section id="s-closeup">
   <div class="eyebrow">3.2 &middot; gene close-up</div>
-  <h3>The chosen sequences grouped by the gene they align to, and how much of the score each gene carries.</h3>
+  <h3>The chosen sequences grouped by the gene they align to, and how much of the score each gene makes up.</h3>
   <p class="sub">Tick a gene and every feature named after it is added; the curve is recomputed on the other
   dataset as you tick.</p>
   <div class="readme" data-edit-id="gc-howto" id="gc-howto"></div>
@@ -684,7 +685,7 @@ show whichever one is selected.</p>
   <div class="ctl">
     <label for="gc-sort">sort the list by</label>
     <select id="gc-sort">
-      <option value="w">weight &mdash; the order the curve uses</option>
+      <option value="w">weight (the order the curve uses)</option>
       <option value="fired">features firing in the tested dataset</option>
       <option value="nfeat">features in the model</option>
       <option value="name">gene name</option>
@@ -711,9 +712,9 @@ show whichever one is selected.</p>
 </section>
 
 <section id="s-browser">
-  <div class="eyebrow"><span class="updlab" data-updated="2026-10-26T20:17:00">updated 2026-10-26 20:17 PST</span>3.3 &middot; where the sequences sit inside the gene</div>
+  <div class="eyebrow"><span class="updlab" data-updated="2026-10-26T20:17:00">updated 2026-10-26 20:17 PST</span>3.3 &middot; where the sequences are inside the gene</div>
   <h3>The position of each chosen sequence inside its gene.</h3>
-  <p class="sub">Exon blocks and the intron line of one transcript; one mark per 39-base sequence, and a mark
+  <p class="sub">Exon blocks and the intron line of one transcript; one mark per sequence, and a mark
   below the line wherever it does not match the genome exactly.</p>
   <div class="readme" data-edit-id="br-howto" id="br-howto"></div>
   <div class="ctl">
@@ -741,7 +742,7 @@ show whichever one is selected.</p>
     </div>
   </div>
   <div class="note" data-edit-id="br-note" id="br-note"></div>
-  <div class="note" data-edit-id="br-gnly-junction" id="br-gnly-junction"><b>GNLY in the uterus (Fig 7): the marks below the line at the exon 3 and exon 4 edges are exon junction reads.</b> Two of the 84 GNLY sequences cross the exon 3 to exon 4 junction (chr2:85,696,056 to 85,697,506): one has 33 bases of exon 3 and 6 of exon 4, the other 3 bases of exon 3 and 36 of exon 4. This is the normal (canonical) junction of the main transcript GNLY-201 (MANE Select), also used by 3 other protein-coding isoforms (GNLY-211, -224, -226); it is not alternative or new splicing. The sequences fall below the line only because the aligner soft-clips the few bases across the junction. The other imperfect GNLY sequences carry the known SNPs rs11127 and rs12845.</div>
+  <div class="note" data-edit-id="br-gnly-junction" id="br-gnly-junction" style="display:none"><b>GNLY in the uterus: the marks below the line at the exon 3 and exon 4 edges are exon junction reads.</b> Two of the 84 GNLY sequences cross the exon 3 to exon 4 junction (chr2:85,696,056 to 85,697,506), each at a different point. This is the normal (canonical) junction of the main transcript GNLY-201 (MANE Select), also used by 3 other protein-coding isoforms (GNLY-211, -224, -226); it is not alternative or new splicing. The sequences fall below the line only because the aligner soft-clips the few bases across the junction. The other imperfect GNLY sequences contain the known SNPs rs11127 and rs12845.</div>
   <div style="margin-top:24px">
     <div class="eyebrow">3.3b &middot; the exon share, by gene length</div>
     <p class="sub">All models of one species pooled, against the exon share of the loci themselves.</p>
@@ -761,7 +762,7 @@ show whichever one is selected.</p>
   The weighted genes are well expressed (median percentile 98.93; 83% of the importance is on the top 5% most expressed genes), but among them the order is unrelated to expression.
   GNLY, a cytotoxic NK gene, makes up most of the importance (also Fig 7, section 3.3).</div>
   <div id="ex-plot" style="margin-top:14px"></div>
-  <p class="note" data-edit-id="ex-basis"><b>How it is counted.</b> Model: hca-uterus-mc5, all sequences, one model over 30 uterus cell types (macro AUC 0.906); P2G run of Sept 2026, before v0.12.
+  <p class="note" data-edit-id="ex-basis"><b>How it is counted.</b> Model: hca-uterus-mc5, all sequences, one model over 30 uterus cell types (macro AUC 0.906); p2single run of Sept 2026, before v0.12.
   Importance of a gene = |sum over its selected sequences of f &times; NK coefficient|; colour = sign (higher or lower score for NK than for the other cell types, which is not the same as higher expression in NK).
   206 genes score higher for NK and 170 lower; 838 grey genes are chosen only through an anchor-present term, which has no gene, so importance 0.
   Expression: the authors' CELLxGENE counts (PremenopausalUterusDynamics, five healthy donors), counts per 10,000 per cell, mean over the same 40,436 cells (1,041 NK, 39,395 other); rank among 31,450 expressed genes. 59 weighted genes are not in the authors' matrix (mostly pseudogenes and mitochondrial rRNA) and are not shown.</p>
@@ -800,8 +801,8 @@ void [[1,'higher score for NK'],[-1,'lower score for NK'],[0,'chosen, no gene we
       <h4>Method</h4>
       <dl class="p3dl">
         <dt>input</dt><dd>sequencing reads, with no reference genome needed to build the model</dd>
-        <dt>features</dt><dd>short sequences called directly on the reads (an 8-base anchor + the 31-base target after it), counted per cell</dd>
-        <dt>model</dt><dd>a multinomial elastic net that picks the features separating the cell types — a linear model</dd>
+        <dt>features</dt><dd>short sequences called directly on the reads, counted per cell</dd>
+        <dt>model</dt><dd>a multinomial elastic net (a linear model) that picks the features separating the cell types</dd>
         <dt>genes</dt><dd>added afterwards, only as labels for sequences the model already chose</dd>
         <dt>transfer</dt><dd>a feature counts in another dataset only if that dataset contains the identical sequence; no re-fitting, no re-alignment</dd>
         <dt>score</dt><dd>probabilities over the cell types both datasets share, one-vs-rest AUC per cell type, averaged</dd>
@@ -816,10 +817,6 @@ void [[1,'higher score for NK'],[-1,'lower score for NK'],[0,'chosen, no gene we
       <h4>Sources</h4>
       <ul id="cites"></ul>
     </div>
-  </div>
-  <div style="margin-top:26px">
-    <h4>Provenance</h4>
-    <div class="prov" id="prov"></div>
   </div>
 </div>
 </div>
@@ -838,4 +835,35 @@ var order=[['gc-train','train'],['gc-test','test'],['gc-cls','cls'],['br-donor',
  if(!done&&n++<60)setTimeout(tick,250);})();})();</script>
 <style>.seq39,.brseq .cp{display:none!important}</style><script>(function(){var re=/[ACGTN][ACGTN·\.\s]{13,}[ACGTN]/g;function fix(n){if(n.nodeType===3){if(/[ACGTN]{12}/.test(n.nodeValue.replace(/[·.\s]/g,'')))n.nodeValue=n.nodeValue.replace(re,'(sequence not shown)');return;}
 if(n.nodeType===1&&!/^(SCRIPT|STYLE)$/.test(n.tagName))for(var c=n.firstChild;c;c=c.nextSibling)fix(c);}
-new MutationObserver(function(ms){ms.forEach(function(m){m.addedNodes.forEach(fix);if(m.type==='characterData')fix(m.target);});}).observe(document.body,{childList:true,subtree:true,characterData:true});fix(document.body);})();</script></body></html>
+new MutationObserver(function(ms){ms.forEach(function(m){m.addedNodes.forEach(fix);if(m.type==='characterData')fix(m.target);});}).observe(document.body,{childList:true,subtree:true,characterData:true});fix(document.body);})();</script><script>/* embedded viewer furniture: follows the host page's light / dark choice and draws the
+   ROSA BIO · CONFIDENTIAL watermark (own layer when opened on its own; the host page's layer covers it when embedded) */
+(function () {
+  var root = document.documentElement, KEY = 'rosa-theme', WK = 'rosa-wm-level';
+  function host() { try { return window.parent !== window ? window.parent.document : null; } catch (e) { return null; } }
+  function inHost() { var h = host(); return !!(h && h.querySelector('.watermark')); }
+  function theme() {
+    var t = null, h = host();
+    if (h) t = h.documentElement.getAttribute('data-theme');
+    if (!t) { try { t = localStorage.getItem(KEY); } catch (e) {} }
+    if (t === 'light' || t === 'dark') root.setAttribute('data-theme', t); else root.removeAttribute('data-theme');
+  }
+  function dark() { var t = root.getAttribute('data-theme'); return t === 'dark' || (!t && window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches); }
+  var wm = document.createElement('div'); wm.className = 'rosa-emb-wm'; wm.setAttribute('aria-hidden', 'true');
+  wm.style.cssText = 'position:fixed;inset:0;z-index:2147482000;pointer-events:none;background-repeat:repeat';
+  document.body.appendChild(wm);
+  function draw() {
+    if (inHost()) { wm.style.display = 'none'; return; }
+    var l = 8; try { var v = localStorage.getItem(WK); if (v !== null && !isNaN(+v)) l = +v; } catch (e) {}
+    var op = Math.min(0.85, l / 100 * 0.85), ink = dark() ? '255,255,255' : '40,40,40';
+    var svg = "<svg xmlns='http://www.w3.org/2000/svg' width='320' height='160'><text x='160' y='90' transform='rotate(-28 160 90)' text-anchor='middle' font-family='IBM Plex Mono, monospace' font-size='15' font-weight='700' letter-spacing='2' fill='rgb(" + ink + ")' fill-opacity='" + op.toFixed(3) + "'>ROSA BIO · CONFIDENTIAL</text></svg>";
+    wm.style.display = l <= 0 ? 'none' : '';
+    wm.style.backgroundImage = 'url("data:image/svg+xml,' + encodeURIComponent(svg) + '")';
+  }
+  function all() { theme(); draw(); }
+  window.addEventListener('storage', all);
+  try { var h = host(); if (h) new MutationObserver(all).observe(h.documentElement, { attributes: true, attributeFilter: ['data-theme'] }); } catch (e) {}
+  if (window.matchMedia) { var mq = matchMedia('(prefers-color-scheme: dark)'); (mq.addEventListener ? mq.addEventListener('change', all) : mq.addListener(all)); }
+  all();
+})();
+</script>
+</body></html>
